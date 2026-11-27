@@ -159,6 +159,11 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Hover and clicks pass through the rocket, so a dot or (i) underneath it still works */
+#rocket {
+  pointer-events: none;
+}
+
 /* The rocket floats: a slow bob with a slight tilt */
 .rocket-float {
   animation: float 4s ease-in-out infinite;
@@ -320,7 +325,6 @@ body {
   max-width: 300px;
   background: var(--white);
   border: 1px solid var(--mint);
-  border-top: 4px solid var(--orange);
   border-radius: 10px;
   padding: 10px 14px 12px;
   box-shadow: 0 8px 24px rgba(25, 68, 95, 0.18);
