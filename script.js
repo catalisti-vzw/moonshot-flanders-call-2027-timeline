@@ -77,7 +77,6 @@
   var DATE_TO_TITLE = 30;        // date line to first title line
   var LINE_HEIGHT = 26;          // extra height per additional title line
   var MAX_LINE = 16;             // titles longer than this are split over two lines
-  var INFO_OFFSET = 26;          // distance from a dot to its (i) badge
   var ROCKET_SCALE = 1.05;
   var INTRO_DURATION_MS = 2200;
 
@@ -230,7 +229,7 @@
   // ---------------------------------------------------------------------------
 
   var placed = [];      // label boxes already placed
-  var pathSamples = []; // points along the path, the dots and their (i) badges: labels keep clear
+  var pathSamples = []; // points along the path and the dots: labels keep clear
 
   function rectsOverlap(a, b) {
     return a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
@@ -253,7 +252,6 @@
     PHASES.forEach(function (phase) {
       var pt = pointForDate(phase.ts);
       pathSamples.push({ cx: pt.x, cy: pt.y, r: 14 });
-      pathSamples.push({ cx: pt.x + INFO_OFFSET, cy: pt.y, r: 15 });
     });
   }
 
@@ -313,14 +311,10 @@
     });
 
     g.appendChild(el('circle', { class: 'halo', cx: pt.x, cy: pt.y, r: 14 }));
-    g.appendChild(el('circle', { class: 'dot', cx: pt.x, cy: pt.y, r: 8 }));
-
-    var info = el('g', { class: 'info', transform: 'translate(' + (pt.x + INFO_OFFSET) + ',' + pt.y + ')' });
-    info.appendChild(el('circle', { r: 13 }));
-    var iText = el('text', { y: 5.4 });
-    iText.textContent = 'i';
-    info.appendChild(iText);
-    g.appendChild(info);
+    var anchor = el('circle', { class: 'dot', cx: pt.x, cy: pt.y, r: 8 }); // the pop-up opens above the dot
+    g.appendChild(anchor);
+    // Invisible, larger circle around the dot so it is easy to hover or tap
+    g.appendChild(el('circle', { class: 'hit', cx: pt.x, cy: pt.y, r: 20 }));
 
     var dateEl = el('text', { class: 'phase-date' });
     dateEl.textContent = dateText;
@@ -348,18 +342,18 @@
     titleEl.setAttribute('y', spot.top + 12 + DATE_TO_TITLE);
     tspans.forEach(function (t) { t.setAttribute('x', spot.cx); });
 
-    g.addEventListener('mouseenter', function () { showTooltip(phase, info); });
+    g.addEventListener('mouseenter', function () { showTooltip(phase, anchor); });
     g.addEventListener('mouseleave', hideTooltip);
-    g.addEventListener('focus', function () { showTooltip(phase, info); });
+    g.addEventListener('focus', function () { showTooltip(phase, anchor); });
     g.addEventListener('blur', hideTooltip);
     g.addEventListener('click', function (e) {
       e.stopPropagation(); // keeps the document click handler from closing it again
-      showTooltip(phase, info);
+      showTooltip(phase, anchor);
     });
     g.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        if (openAnchor === info) hideTooltip(); else showTooltip(phase, info);
+        if (openAnchor === anchor) hideTooltip(); else showTooltip(phase, anchor);
       } else if (e.key === 'Escape') {
         hideTooltip();
       }

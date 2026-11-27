@@ -75,9 +75,12 @@ body {
 /* ---------- TODAY badge (top left) ---------- */
 
 .today-badge {
-  display: flex;
-  padding: 16px 22px 0;
+  display: inline-flex;
   flex-direction: column;
+  margin: 16px 22px 0;
+  padding: 10px 16px 11px;
+  border-radius: 12px;
+  background: var(--green);
   line-height: 1.2;
 }
 
@@ -85,7 +88,7 @@ body {
   font-size: 0.9rem;
   font-weight: 900;
   letter-spacing: 0.14em;
-  color: var(--green);
+  color: var(--navy);
 }
 
 .current-date {
@@ -98,7 +101,8 @@ body {
 .current-phase {
   margin-top: 4px;
   font-size: 1rem;
-  color: var(--text-muted);
+  font-weight: 500;
+  color: var(--navy);
 }
 
 .current-phase strong {
@@ -161,7 +165,7 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* Hover and clicks pass through the rocket, so a dot or (i) underneath it still works */
+/* Hover and clicks pass through the rocket, so a dot underneath it still works */
 #rocket {
   pointer-events: none;
 }
@@ -251,30 +255,8 @@ body {
   100% { transform: scale(1.6); opacity: 0; }
 }
 
-.phase .info circle {
-  fill: var(--white);
-  stroke: var(--navy);
-  stroke-width: 1.5;
-  transition: fill 0.15s ease;
-}
-
-.phase .info text {
-  fill: var(--navy);
-  font-size: 15px;
-  font-weight: 700;
-  font-style: italic;
-  text-anchor: middle;
-  pointer-events: none;
-}
-
-.phase:hover .info circle,
-.phase:focus-visible .info circle {
-  fill: var(--navy);
-}
-
-.phase:hover .info text,
-.phase:focus-visible .info text {
-  fill: var(--white);
+.phase .hit {
+  fill: transparent;
 }
 
 /* Hovering or focusing a stage highlights its dot and label and fades the others */
@@ -476,7 +458,7 @@ body {
   }
 
   .today-badge {
-    padding: 14px 16px 0;
+    margin: 14px 16px 0;
   }
 
   /* The drawing keeps a readable size and scrolls sideways */
