@@ -76,12 +76,15 @@
   // Scene geometry (SVG viewBox units) — the drawing itself is in index.html
   // ---------------------------------------------------------------------------
 
-  var VIEW = { w: 1200, h: 400, margin: 8 };
+  var VIEW = { w: 1200, h: 400, margin: 8, top: 0, bottom: 400 };
   var MOON = { cx: 1192, cy: 200, r: 80 };    // labels keep clear of the moon's centre (may overlap its edge)
-  var DATE_TO_TITLE = 30;        // date line to first title line
-  var LINE_HEIGHT = 26;          // extra height per additional title line
-  var MAX_LINE = 16;             // titles longer than this are split over two lines
-  var ROCKET_SCALE = 1.05;
+  // Label sizes on a wide screen. On narrow screens the drawing is scaled down to fit, so the
+  // labels are drawn larger (factor K) to stay readable; see layout().
+  var BASE_FONT = 23;            // label font size (SVG units) on wide screens
+  var MIN_FONT_PX = 13;          // labels never get smaller than this on screen
+  var MAX_LINE = 16;             // titles longer than this are split over two lines (wide screens)
+  var K = 1;                     // current label scale factor
+  var DATE_TO_TITLE, LINE_HEIGHT, ROCKET_SCALE;
   var INTRO_DURATION_MS = 2200;
 
   // ---------------------------------------------------------------------------
@@ -155,6 +158,10 @@
   var progress = document.getElementById('progress');
   var phasesG = document.getElementById('phases');
   var rocket = document.getElementById('rocket');
+  var scene = document.getElementById('scene');
+  var trajectory = path;
+  var ovalA = document.querySelector('.oval-a');
+  var ovalB = document.querySelector('.oval-b');
   var stage = document.getElementById('stage');
   var currentDateEl = document.getElementById('currentDate');
   var currentPhaseEl = document.getElementById('currentPhase');
@@ -192,6 +199,7 @@
   // ---------------------------------------------------------------------------
 
   var placed = [];      // label boxes already placed
+  var labelMisses = 0;  // labels that found no free spot in the current layout
   var pathSamples = []; // points along the path and the dots: labels keep clear
 
   function rectsOverlap(a, b) {
@@ -207,43 +215,54 @@
   function collectPathSamples() {
     for (var len = 0; len <= pathLength; len += 12) {
       var p = path.getPointAtLength(len);
-      pathSamples.push({ cx: p.x, cy: p.y, r: 10 });
+      pathSamples.push({ cx: p.x, cy: p.y, r: 10 * Math.sqrt(K) });
     }
     // The rocket waits at the start of the path before the call opens: keep that spot clear.
     var start = path.getPointAtLength(0);
-    pathSamples.push({ cx: start.x, cy: start.y, r: 40 });
+    pathSamples.push({ cx: start.x, cy: start.y, r: 40 * Math.sqrt(K) });
     PHASES.forEach(function (phase) {
       var pt = pointForDate(phase.ts);
-      pathSamples.push({ cx: pt.x, cy: pt.y, r: 14 });
+      pathSamples.push({ cx: pt.x, cy: pt.y, r: 14 * Math.sqrt(K) });
     });
   }
 
-  // Splits a title longer than MAX_LINE characters over two lines (at the space nearest the
-  // middle). A manual \n in `short` is respected.
+  // Splits a title over lines. On wide screens a manual \n in `short` is respected and longer
+  // titles are split in two; on narrow screens the words are wrapped to short lines.
   function wrapTitle(text) {
-    if (text.indexOf('\n') !== -1 || text.length <= MAX_LINE) return text.split('\n');
-    var mid = text.length / 2;
-    var best = -1;
-    for (var i = 0; i < text.length; i++) {
-      if (text[i] === ' ' && (best === -1 || Math.abs(i - mid) < Math.abs(best - mid))) best = i;
+    if (K === 1) {
+      if (text.indexOf('\n') !== -1 || text.length <= MAX_LINE) return text.split('\n');
+      var mid = text.length / 2;
+      var best = -1;
+      for (var i = 0; i < text.length; i++) {
+        if (text[i] === ' ' && (best === -1 || Math.abs(i - mid) < Math.abs(best - mid))) best = i;
+      }
+      return best === -1 ? [text] : [text.slice(0, best), text.slice(best + 1)];
     }
-    return best === -1 ? [text] : [text.slice(0, best), text.slice(best + 1)];
+    var max = 14;
+    var lines = [];
+    text.replace(/\n/g, ' ').split(' ').forEach(function (word) {
+      var last = lines[lines.length - 1];
+      if (last !== undefined && (last + ' ' + word).length <= max) lines[lines.length - 1] = last + ' ' + word;
+      else lines.push(word);
+    });
+    return lines;
   }
 
   // Chooses whether a label of width w and given height goes above or below the dot at pt,
   // and how far from it: the free spot closest to the dot wins (below wins a tie).
   function placeLabel(pt, w, height) {
     var centre = clamp(pt.x, VIEW.margin + w / 2, VIEW.w - VIEW.margin - w / 2);
+    var gaps = [14, 24, 36, 50, 66, 85, 105, 130].map(function (g) { return g * K; });
     var best = null;
     // A label may shift sideways a little (it always stays under/over its own dot)
-    [0, -20, 20, -40, 40].forEach(function (shift) {
+    [0, -20, 20, -40, 40, -60, 60, -80, 80].forEach(function (shift) {
       var cx = centre + shift;
       if (Math.abs(cx - pt.x) > w / 2 - 10) return;
-      [14, 24, 36, 50, 66].forEach(function (gap) {
+      gaps.forEach(function (gap) {
         [1, -1].forEach(function (side) { // 1 = below, -1 = above
           var top = side === 1 ? pt.y + gap : pt.y - gap - height;
           var box = { x0: cx - w / 2 - 6, x1: cx + w / 2 + 6, y0: top, y1: top + height };
-          if (box.y0 < VIEW.margin || box.y1 > VIEW.h - VIEW.margin) return;
+          if (box.y0 < VIEW.top + VIEW.margin || box.y1 > VIEW.bottom - VIEW.margin) return;
           if (box.x0 < 0 || box.x1 > VIEW.w) return;
           if (rectHitsCircle(box, MOON)) return;
           if (pathSamples.some(function (c) { return rectHitsCircle(box, c); })) return;
@@ -254,7 +273,7 @@
       });
     });
     if (!best) { // no free spot: fall back to just below the dot
-      console.warn('no free label spot', Math.round(pt.x));
+      labelMisses++;
       var top = pt.y + 14;
       best = { cx: centre, top: top, box: { x0: centre - w / 2, x1: centre + w / 2, y0: top, y1: top + height } };
     }
@@ -272,12 +291,14 @@
       'aria-label': dateText + ': ' + phase.title + '. ' + phase.text
     });
 
-    g.appendChild(el('circle', { class: 'halo', cx: pt.x, cy: pt.y, r: 14 }));
-    g.appendChild(el('circle', { class: 'dot', cx: pt.x, cy: pt.y, r: 8 }));
+    var dotScale = Math.sqrt(K);
+    g.appendChild(el('circle', { class: 'halo', cx: pt.x, cy: pt.y, r: 14 * dotScale }));
+    g.appendChild(el('circle', { class: 'dot', cx: pt.x, cy: pt.y, r: 8 * dotScale, style: 'stroke-width:' + 3 * dotScale + 'px' }));
 
-    var dateEl = el('text', { class: 'phase-date' });
+    var textStyle = 'font-size:' + BASE_FONT * K + 'px;stroke-width:' + 6 * K + 'px';
+    var dateEl = el('text', { class: 'phase-date', style: textStyle });
     dateEl.textContent = dateText;
-    var titleEl = el('text', { class: 'phase-title' });
+    var titleEl = el('text', { class: 'phase-title', style: textStyle });
     var lines = wrapTitle(phase.short);
     var tspans = lines.map(function (line, k) {
       var t = el('tspan', { dy: k === 0 ? 0 : LINE_HEIGHT });
@@ -293,12 +314,12 @@
     var w = Math.max.apply(null, [dateEl.getComputedTextLength()].concat(
       tspans.map(function (t) { return t.getComputedTextLength(); })));
     if (!w) w = Math.max.apply(null, [dateText.length].concat(lines.map(function (l) { return l.length; }))) * 10;
-    var height = 13 + DATE_TO_TITLE + (lines.length - 1) * LINE_HEIGHT + 12;
+    var height = 13 * K + DATE_TO_TITLE + (lines.length - 1) * LINE_HEIGHT + 12 * K;
     var spot = placeLabel(pt, w, height);
 
     dateEl.setAttribute('x', spot.cx);
-    dateEl.setAttribute('y', spot.top + 12);
-    titleEl.setAttribute('y', spot.top + 12 + DATE_TO_TITLE);
+    dateEl.setAttribute('y', spot.top + 12 * K);
+    titleEl.setAttribute('y', spot.top + 12 * K + DATE_TO_TITLE);
     tspans.forEach(function (t) { t.setAttribute('x', spot.cx); });
 
     phase.svgEl = g;
@@ -315,13 +336,6 @@
     var angle = Math.atan2(a.y - b.y, a.x - b.x) * 180 / Math.PI;
     rocket.setAttribute('transform', 'translate(' + p.x + ',' + p.y + ') rotate(' + angle + ') scale(' + ROCKET_SCALE + ')');
     progress.setAttribute('stroke-dasharray', len + ' ' + (pathLength + 10));
-  }
-
-  // On small screens the drawing scrolls sideways: bring the rocket into view.
-  function scrollToRocket() {
-    if (sceneScroll.scrollWidth <= sceneScroll.clientWidth) return;
-    var x = pointForDate(today()).x / VIEW.w * sceneScroll.scrollWidth;
-    sceneScroll.scrollLeft = clamp(x - sceneScroll.clientWidth / 2, 0, sceneScroll.scrollWidth);
   }
 
   function updateStatus(now) {
@@ -377,15 +391,58 @@
   // Start
   // ---------------------------------------------------------------------------
 
+  // The drawing always fits the width of the screen. On narrow screens it gets more room above
+  // and below the path, and the labels, dots and rocket are drawn larger so they stay readable.
+  function layout() {
+    var px = scene.getBoundingClientRect().width || VIEW.w;
+    var k = clamp((MIN_FONT_PX / (px / VIEW.w)) / BASE_FONT, 1, 2.6);
+    k = Math.round(k * 10) / 10;
+    if (k === K && phasesG.childNodes.length) return false;
+    K = k;
+    DATE_TO_TITLE = 30 * K;
+    LINE_HEIGHT = 26 * K;
+    ROCKET_SCALE = 1.05 * Math.sqrt(K);
+
+    // Try to fit all labels; if one finds no free spot, give the drawing a bit more height.
+    for (var room = 1; room <= 2.2; room += 0.3) {
+      var extraTop = Math.round((K - 1) * 200 * room);
+      var extraBottom = Math.round((K - 1) * 170 * room);
+      VIEW.top = -extraTop;
+      VIEW.bottom = VIEW.h + extraBottom;
+      scene.setAttribute('viewBox', '0 ' + VIEW.top + ' ' + VIEW.w + ' ' + (VIEW.bottom - VIEW.top));
+      // The Earth ovals grow so they still run off the bottom edge
+      ovalA.setAttribute('r', 150 + extraBottom);
+      ovalB.setAttribute('r', 150 + extraBottom);
+      progress.style.strokeWidth = trajectory.style.strokeWidth = 4 * Math.sqrt(K);
+
+      phasesG.textContent = '';
+      placed = [];
+      pathSamples = [];
+      labelMisses = 0;
+      collectPathSamples();
+      // The first stage (squeezed against the left edge) and the stages near the Moon (closest
+      // together) have the fewest free spots, so their labels are placed first.
+      // The dots are then put back in date order.
+      buildPhase(PHASES[0], 0);
+      for (var i = PHASES.length - 1; i >= 1; i--) buildPhase(PHASES[i], i);
+      PHASES.forEach(function (phase) { phasesG.appendChild(phase.svgEl); });
+      if (!labelMisses || K === 1) break;
+    }
+    return true;
+  }
+
   function init() {
-    collectPathSamples();
-    // The stages near the Moon are closest together, so their labels are placed first.
-    // The dots are then put back in date order for keyboard (Tab) navigation.
-    for (var i = PHASES.length - 1; i >= 0; i--) buildPhase(PHASES[i], i);
-    PHASES.forEach(function (phase) { phasesG.appendChild(phase.svgEl); });
+    layout();
     placeRocketAtLength(0);
     update(true);
-    scrollToRocket();
+
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        if (layout()) { lastDay = null; update(false); }
+      }, 150);
+    });
 
     // Check once a minute whether the day has changed (e.g. a page left open overnight),
     // and immediately when the visitor returns to the tab.

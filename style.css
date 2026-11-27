@@ -281,11 +281,6 @@ body {
     margin: 14px 16px 20px;
   }
 
-  /* The drawing keeps a readable size and scrolls sideways */
-  .stage svg {
-    min-width: 860px;
-  }
-
   .current-date {
     font-size: 1.35rem;
   }

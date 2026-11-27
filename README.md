@@ -26,7 +26,7 @@ Add `?date=YYYY-MM-DD` to the page address, for example `index.html?date=2027-06
 
 ## Embedding
 
-The timeline reports its own height to the page it is embedded in, so the iframe can always fit it exactly. On narrow screens the drawing keeps a readable size and can be scrolled sideways. Paste this into the page (Drupal: Full HTML text format):
+The timeline reports its own height to the page it is embedded in, so the iframe can always fit it exactly. The drawing always fits the width of the screen; on narrow screens the labels are drawn larger and get more room above and below the path, so they stay readable. Paste this into the page (Drupal: Full HTML text format):
 
 ```html
 <iframe id="moonshot-timeline" src="https://catalisti-vzw.github.io/moonshot-flanders-call-2027-timeline/"
