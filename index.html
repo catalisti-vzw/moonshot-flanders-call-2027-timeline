@@ -55,6 +55,13 @@
         <g id="phases" class="phases-g"></g>
 
         <!-- Rocket, positioned by script.js. Both versions point to the right (0°). -->
+        <defs>
+          <!-- While the rocket waits for launch, its exhaust flames are cut off -->
+          <clipPath id="noFlames">
+            <rect x="-18" y="-60" width="90" height="120"/>
+          </clipPath>
+        </defs>
+
         <g id="rocket" aria-hidden="true">
           <!-- script.js moves #rocket along the path; .rocket-float adds the gentle floating motion -->
           <g class="rocket-float">

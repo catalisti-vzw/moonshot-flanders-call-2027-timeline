@@ -5,7 +5,7 @@
   // Content — edit dates and texts here
   // ---------------------------------------------------------------------------
 
-  var BEFORE_START_TEXT = 'Call 2027 opens soon'; // shown as "Current:" before the call opens
+  var BEFORE_START_TEXT = 'Rocket is awaiting launch'; // shown as "Current:" before the call opens
   var START = '2026-12-07'; // opening of Call 2027: the rocket leaves Earth
   var END = '2028-01-08';   // just after the final results (end of December 2027): the rocket reaches the Moon
 
@@ -87,6 +87,9 @@
   var LABEL_HEIGHT = { above: 14, below: 37 }; // date line at y, first title line at y + 26
   var LINE_HEIGHT = 20; // extra height per additional title line
     var INTRO_DURATION_MS = 2200;
+
+  // Before the call opens, the rocket stands upright on the ovals, waiting for launch.
+  var LAUNCH_PAD = { x: 78, y: 530 }; // centre of the standing rocket (its base rests on the ovals)
   var INFO_OFFSET = 28;  // distance from a dot to its (i) badge
 
   // ---------------------------------------------------------------------------
@@ -255,9 +258,10 @@
       var p = path.getPointAtLength(len);
       pathSamples.push({ cx: p.x, cy: p.y, r: 21 }); // wide enough for the rocket to pass
     }
-    // The rocket waits at the start of the path before the call opens: keep that spot clear.
+    // Keep labels clear of the rocket on its launch pad and at the start of the path.
     var startPt = path.getPointAtLength(0);
-    pathSamples.push({ cx: startPt.x, cy: startPt.y, r: 46 });
+    pathSamples.push({ cx: startPt.x, cy: startPt.y, r: 30 });
+    pathSamples.push({ cx: LAUNCH_PAD.x, cy: LAUNCH_PAD.y - 6, r: 46 });
     PHASES.forEach(function (phase) {
       var pt = pointForDate(phase.ts);
       phasePoints.push(pt);
@@ -443,7 +447,14 @@
   // Rocket and status
   // ---------------------------------------------------------------------------
 
+  function placeRocketOnPad() {
+    rocket.classList.add('is-waiting');
+    rocket.setAttribute('transform', 'translate(' + LAUNCH_PAD.x + ',' + LAUNCH_PAD.y + ') rotate(-90)');
+    progress.setAttribute('stroke-dasharray', '0 ' + (pathLength + 10));
+  }
+
   function placeRocketAtLength(len) {
+    rocket.classList.remove('is-waiting');
     var p = path.getPointAtLength(len);
     var a = path.getPointAtLength(Math.min(pathLength, len + 1));
     var b = path.getPointAtLength(Math.max(0, len - 1));
@@ -484,6 +495,12 @@
     lastDay = now;
 
     updateStatus(now);
+
+    if (now < startTs) {
+      placeRocketOnPad();
+      return;
+    }
+
     var target = pointForDate(now).len;
 
     if (!animate || prefersReducedMotion() || target === 0) {
@@ -491,7 +508,7 @@
       return;
     }
 
-    // First load: let the rocket fly from Earth to today's position.
+    // First load after launch: let the rocket fly from Earth to today's position.
     var t0 = null;
     function frame(t) {
       if (t0 === null) t0 = t;
@@ -511,7 +528,6 @@
     collectPathObstacles();
     PHASES.forEach(buildPhase);
     buildList();
-    placeRocketAtLength(0);
     update(true);
 
     // Check once a minute whether the day has changed (e.g. a page left open overnight),
