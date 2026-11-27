@@ -35,8 +35,8 @@
     {
       iso: '2027-04-05',
       current: 'Writing the Letter of Intent',
-      short: 'Selected pre-proposals announced\n& LOI phase opens',
-      title: 'Selected pre-proposals announced & LOI phase opens',
+      short: 'Pre-proposal results & LOI opens',
+      title: 'Pre-proposal results & LOI opens',
       text: 'Applicants hear whether their pre-proposal is selected. Companies can express their interest in one or more projects by submitting a Letter of Intent (LOI).'
     },
     {
@@ -49,32 +49,32 @@
     {
       iso: '2027-08-31',
       current: 'Evaluation of Letters of Intent',
-      short: 'LOI phase closes',
-      title: 'LOI phase closes',
+      short: 'LOI deadline',
+      title: 'LOI deadline',
       text: 'Final deadline for companies to submit Letters of Intent (LOIs).'
     },
     {
       iso: '2027-09-30',
       label: 'Sept. 2027',
       current: 'IGNITE results announced',
-      short: 'IGNITE results announced',
-      title: 'IGNITE results announced',
+      short: 'IGNITE results',
+      title: 'IGNITE results',
       text: 'The selected IGNITE projects are announced. Selection is made by VLAIO (HBC).'
     },
     {
       iso: '2027-11-30',
       label: 'Nov. 2027',
       current: 'ESI results announced',
-      short: 'ESI results announced',
-      title: 'ESI results announced',
+      short: 'ESI results',
+      title: 'ESI results',
       text: 'The selected Early Stage Innovation (ESI) projects are announced. Selection is made by VLAIO (HBC).'
     },
     {
       iso: '2027-12-31',
       label: 'Dec. 2027',
       current: 'All results announced',
-      short: 'LSI results announced',
-      title: 'LSI results announced',
+      short: 'LSI results',
+      title: 'LSI results',
       text: 'The selected Later Stage Innovation (LSI) projects are announced. Selection is made by the Flemish Government.'
     }
   ];
