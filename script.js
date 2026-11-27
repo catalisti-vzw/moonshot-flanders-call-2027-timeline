@@ -409,6 +409,24 @@
       if (!document.hidden) update(false);
     });
 
+    reportHeight();
+  }
+
+  // When the timeline is embedded in an iframe, tell the parent page how tall it is,
+  // so the iframe can fit the content exactly (see README: "Embedding").
+  function reportHeight() {
+    if (window.parent === window) return;
+    var last = 0;
+    function send() {
+      var h = Math.ceil(document.querySelector('.page').getBoundingClientRect().height);
+      if (h && h !== last) {
+        last = h;
+        window.parent.postMessage({ type: 'moonshot-timeline-height', height: h }, '*');
+      }
+    }
+    send();
+    window.addEventListener('resize', send);
+    if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
   }
 
   // Wait for the web font so that label widths are measured with the right font.
