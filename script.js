@@ -44,7 +44,7 @@
     },
     {
       iso: '2027-09-30',
-      label: 'September 2027',
+      label: 'Sept. 2027',
       current: 'IGNITE results announced',
       short: 'IGNITE results announced',
       title: 'IGNITE results announced',
@@ -52,7 +52,7 @@
     },
     {
       iso: '2027-11-30',
-      label: 'November 2027',
+      label: 'Nov. 2027',
       current: 'ESI results announced',
       short: 'ESI results announced',
       title: 'ESI results announced',
@@ -60,7 +60,7 @@
     },
     {
       iso: '2027-12-31',
-      label: 'December 2027',
+      label: 'Dec. 2027',
       current: 'All results announced',
       short: 'LSI results announced',
       title: 'LSI results announced',
