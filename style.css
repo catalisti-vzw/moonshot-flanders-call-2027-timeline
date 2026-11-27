@@ -383,16 +383,20 @@ body {
 
 .phase-list li {
   position: relative;
-  padding: 0 0 16px 28px;
+  padding: 0 0 24px 36px;
 }
 
-/* Dotted orange connector between the list dots */
+.phase-list li:last-child {
+  padding-bottom: 0;
+}
+
+/* Dotted orange line connecting the dots */
 .phase-list li::before {
   content: "";
   position: absolute;
   left: 7px;
-  top: 6px;
-  bottom: -6px;
+  top: 22px;
+  bottom: 2px;
   border-left: 3px dotted var(--orange);
 }
 
@@ -400,45 +404,68 @@ body {
   display: none;
 }
 
+/* The dot, centred on the date line */
 .phase-list li::after {
   content: "";
   position: absolute;
-  left: 1px;
+  left: 0;
   top: 4px;
-  width: 11px;
-  height: 11px;
+  width: 17px;
+  height: 17px;
+  box-sizing: border-box;
   border-radius: 50%;
   background: var(--white);
   border: 3px solid var(--orange);
 }
 
+/* Steps that have passed: filled dot */
 .phase-list li.is-done::after {
   background: var(--orange);
 }
 
-.phase-list li.is-next {
+/* The next step: soft orange ring around the dot and a small "Next" tag */
+.phase-list li.is-next::after {
+  box-shadow: 0 0 0 5px rgba(251, 170, 0, 0.25);
+}
+
+.phase-list li.is-next .pl-date::after {
+  content: "Next";
+  display: inline-block;
+  margin-left: 10px;
+  padding: 3px 9px 2px;
+  border-radius: 999px;
   background: var(--mint-light);
-  border-radius: 8px;
+  color: var(--navy);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  vertical-align: 2px;
 }
 
 .pl-date {
   display: block;
   color: var(--orange);
+  font-size: 1.1rem;
   font-weight: 700;
-  font-size: 1.05rem;
+  line-height: 25px;
 }
 
 .pl-title {
   display: block;
-  font-weight: 900;
+  margin-top: 2px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
 .pl-text {
   display: block;
-  margin-top: 2px;
+  margin-top: 4px;
   color: var(--text-muted);
   font-size: 0.95rem;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 @media (max-width: 700px) {
