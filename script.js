@@ -73,12 +73,12 @@
   // ---------------------------------------------------------------------------
 
   var VIEW = { w: 1200, h: 400, margin: 8 };
-  var MOON = { cx: 1290, cy: 210, r: 118 };   // labels keep clear of the moon (may touch its edge)
-  var DATE_TO_TITLE = 27;        // date line to first title line
-  var LINE_HEIGHT = 23;          // extra height per additional title line
+  var MOON = { cx: 1192, cy: 200, r: 80 };    // labels keep clear of the moon's centre (may overlap its edge)
+  var DATE_TO_TITLE = 30;        // date line to first title line
+  var LINE_HEIGHT = 26;          // extra height per additional title line
   var MAX_LINE = 16;             // titles longer than this are split over two lines
   var INFO_OFFSET = 26;          // distance from a dot to its (i) badge
-  var ROCKET_SCALE = 0.85;
+  var ROCKET_SCALE = 1.05;
   var INTRO_DURATION_MS = 2200;
 
   // ---------------------------------------------------------------------------
@@ -249,7 +249,7 @@
     }
     // The rocket waits at the start of the path before the call opens: keep that spot clear.
     var start = path.getPointAtLength(0);
-    pathSamples.push({ cx: start.x, cy: start.y, r: 34 });
+    pathSamples.push({ cx: start.x, cy: start.y, r: 40 });
     PHASES.forEach(function (phase) {
       var pt = pointForDate(phase.ts);
       pathSamples.push({ cx: pt.x, cy: pt.y, r: 14 });
@@ -340,12 +340,12 @@
     var w = Math.max.apply(null, [dateEl.getComputedTextLength()].concat(
       tspans.map(function (t) { return t.getComputedTextLength(); })));
     if (!w) w = Math.max.apply(null, [dateText.length].concat(lines.map(function (l) { return l.length; }))) * 10;
-    var height = 12 + DATE_TO_TITLE + (lines.length - 1) * LINE_HEIGHT + 10;
+    var height = 13 + DATE_TO_TITLE + (lines.length - 1) * LINE_HEIGHT + 12;
     var spot = placeLabel(pt, w, height);
 
     dateEl.setAttribute('x', spot.cx);
-    dateEl.setAttribute('y', spot.top + 10);
-    titleEl.setAttribute('y', spot.top + 10 + DATE_TO_TITLE);
+    dateEl.setAttribute('y', spot.top + 12);
+    titleEl.setAttribute('y', spot.top + 12 + DATE_TO_TITLE);
     tspans.forEach(function (t) { t.setAttribute('x', spot.cx); });
 
     g.addEventListener('mouseenter', function () { showTooltip(phase, info); });
