@@ -18,7 +18,6 @@ All stages are in the `PHASES` list at the top of `script.js`:
 - `label`: optional text shown instead of the date, for example `November 2027`.
 - `short`: the label on the timeline. Use `\n` to split it over two lines.
 - `title` and `text`: read out by screen readers.
-- `current`: shown after "Current:" at the top, from this date until the next stage.
 
 ## Previewing another date
 

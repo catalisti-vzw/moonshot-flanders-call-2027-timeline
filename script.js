@@ -9,46 +9,39 @@
   // Content — edit dates and texts here
   // ---------------------------------------------------------------------------
 
-  var BEFORE_START_TEXT = 'Call 2027 opens soon'; // shown as "Current:" before the call opens
   var START = '2026-12-07'; // opening of Call 2027: the rocket leaves Earth
   var END = '2028-01-08';   // just after the final results (end of December 2027): the rocket reaches the Moon
 
   // `short` is the label on the timeline; use \n to split it over two lines.
   // `label` (optional) replaces the formatted date when only the month is known;
-  // `iso` then sets where the dot sits on the path (end of the month) and when "Current:" switches.
-  // `current` is shown after "Current:" at the top, from this milestone until the next one.
+  // `iso` then sets where the dot sits on the path (end of the month).
   var PHASES = [
     {
       iso: '2026-12-07',
-      current: 'Pre-proposal submission',
       short: 'Call opens',
       title: 'Call opens',
       text: 'Call 2027 opens: pre-proposals can be submitted from this date.'
     },
     {
       iso: '2027-02-19',
-      current: 'Evaluation of pre-proposals',
       short: 'Pre-proposal deadline',
       title: 'Pre-proposal deadline',
       text: 'Final deadline to submit your pre-proposal for Call 2027.'
     },
     {
       iso: '2027-04-05',
-      current: 'Evaluation of pre-proposals',
       short: 'Pre-proposal results & LOI opens',
       title: 'Pre-proposal results & LOI opens',
       text: 'Applicants hear whether their pre-proposal is selected. Companies can express their interest in one or more projects by submitting a Letter of Intent (LOI).'
     },
     {
       iso: '2027-06-04',
-      current: 'Evaluation of full proposals',
       short: 'Full proposal deadline',
       title: 'Full proposal deadline',
       text: 'Final deadline to submit your full proposal for Call 2027.'
     },
     {
       iso: '2027-08-31',
-      current: 'Evaluation of full proposals',
       short: 'LOI deadline',
       title: 'LOI deadline',
       text: 'Final deadline for companies to submit Letters of Intent (LOIs).'
@@ -56,7 +49,6 @@
     {
       iso: '2027-09-30',
       label: 'Sept. 2027',
-      current: 'IGNITE results announced',
       short: 'IGNITE results',
       title: 'IGNITE results',
       text: 'The selected IGNITE projects are announced. Selection is made by VLAIO (HBC).'
@@ -64,7 +56,6 @@
     {
       iso: '2027-11-30',
       label: 'Nov. 2027',
-      current: 'ESI results announced',
       short: 'ESI results',
       title: 'ESI results',
       text: 'The selected Early Stage Innovation (ESI) projects are announced. Selection is made by VLAIO (HBC).'
@@ -72,7 +63,6 @@
     {
       iso: '2027-12-31',
       label: 'Dec. 2027',
-      current: 'All results announced',
       short: 'LSI results',
       title: 'LSI results',
       text: 'The selected Later Stage Innovation (LSI) projects are announced. Selection is made by the Flemish Government.'
@@ -171,7 +161,6 @@
   var ovalB = document.querySelector('.oval-b');
   var stage = document.getElementById('stage');
   var currentDateEl = document.getElementById('currentDate');
-  var currentPhaseEl = document.getElementById('currentPhase');
 
   var startTs = parseISO(START);
   var endTs = parseISO(END);
@@ -357,14 +346,6 @@
       phase.svgEl.classList.toggle('is-done', done);
       phase.svgEl.classList.toggle('is-next', isNext);
     });
-
-    // The current stage is set by the latest milestone that has been reached.
-    var reached = PHASES.filter(function (phase) { return phase.ts <= now; });
-    var current = reached.length ? reached[reached.length - 1].current : BEFORE_START_TEXT;
-    var strong = document.createElement('strong');
-    strong.textContent = current;
-    currentPhaseEl.textContent = '';
-    currentPhaseEl.append('Current: ', strong);
   }
 
   var lastDay = null;

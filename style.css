@@ -103,17 +103,6 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.current-phase {
-  margin-top: 4px;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--navy);
-}
-
-.current-phase strong {
-  color: var(--navy);
-}
-
 /* ---------- Scene ---------- */
 
 .oval {
