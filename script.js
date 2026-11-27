@@ -34,7 +34,7 @@
     },
     {
       iso: '2027-04-05',
-      current: 'Writing the Letter of Intent',
+      current: 'Evaluation of pre-proposals',
       short: 'Pre-proposal results & LOI opens',
       title: 'Pre-proposal results & LOI opens',
       text: 'Applicants hear whether their pre-proposal is selected. Companies can express their interest in one or more projects by submitting a Letter of Intent (LOI).'
@@ -48,7 +48,7 @@
     },
     {
       iso: '2027-08-31',
-      current: 'Evaluation of Letters of Intent',
+      current: 'Evaluation of full proposals',
       short: 'LOI deadline',
       title: 'LOI deadline',
       text: 'Final deadline for companies to submit Letters of Intent (LOIs).'
