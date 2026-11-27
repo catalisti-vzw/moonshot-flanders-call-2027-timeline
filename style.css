@@ -1,5 +1,5 @@
 /* Moonshot Flanders — Call 2027 timeline
-   Colours and typeface follow the Moonshot colour palette. */
+   Colours follow the Moonshot colour palette; typeface: League Spartan. */
 
 :root {
   /* Primary */
@@ -14,7 +14,7 @@
 
   --white: #FFFFFF;
   --text-muted: #4A6678;
-  --font: "Lato", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --font: "League Spartan", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
 }
 
 * {
@@ -128,23 +128,24 @@ body {
 
 /* ---------- Gentle motion ---------- */
 
-/* The two ovals drift very slowly around each other */
+/* The two ovals slowly move towards and away from each other,
+   so they overlap more, then less */
 .oval-a {
-  animation: drift-a 26s ease-in-out infinite alternate;
+  animation: drift-a 14s ease-in-out infinite alternate;
 }
 
 .oval-b {
-  animation: drift-b 32s ease-in-out infinite alternate;
+  animation: drift-b 14s ease-in-out infinite alternate;
 }
 
 @keyframes drift-a {
-  from { transform: translate(0, 0); }
-  to { transform: translate(14px, -10px); }
+  from { transform: translate(-14px, 14px); }  /* apart */
+  to { transform: translate(4px, -4px); }      /* together */
 }
 
 @keyframes drift-b {
-  from { transform: translate(0, 0); }
-  to { transform: translate(-12px, 12px); }
+  from { transform: translate(26px, -26px); }  /* apart */
+  to { transform: translate(-8px, 8px); }      /* together */
 }
 
 /* The moon turns slowly around its centre (the top right corner) */

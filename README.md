@@ -5,7 +5,7 @@ Interactive timeline for Moonshot Flanders Call 2027. A rocket travels from the 
 ## Files
 
 - `index.html`: page structure and the illustration (ovals, moon, path, rocket)
-- `style.css`: Moonshot house style (colours and the Lato typeface)
+- `style.css`: Moonshot house style (colours and the League Spartan typeface)
 - `script.js`: stages, dates and texts, label placement and rocket position
 - `assets/rocket.png`: Moonshot rocket
 - `assets/moon.webp`: moon picture (add it to this folder; a drawn moon is shown until it is there)
