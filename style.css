@@ -172,31 +172,6 @@ body {
   stroke: var(--white);
 }
 
-/* Number inside the dot */
-.dot-num {
-  fill: var(--orange);
-  font-size: 14px;
-  font-weight: 900;
-  text-anchor: middle;
-  pointer-events: none;
-}
-
-.phase.is-done .dot-num {
-  fill: var(--white);
-}
-
-/* Matching number in front of the label's date */
-.label-num circle {
-  fill: var(--orange);
-}
-
-.label-num text {
-  fill: var(--white);
-  font-size: 13px;
-  font-weight: 900;
-  text-anchor: middle;
-}
-
 /* The next upcoming phase gets a soft pulsing ring */
 .phase .halo {
   fill: none;
@@ -240,6 +215,21 @@ body {
 .phase:hover .info text,
 .phase:focus-visible .info text {
   fill: var(--white);
+}
+
+/* Hovering or focusing a stage highlights its dot and label and fades the others */
+.phases-g:hover .phase:not(:hover),
+.phases-g:focus-within .phase:not(:focus) {
+  opacity: 0.3;
+}
+
+.phase {
+  transition: opacity 0.15s ease;
+}
+
+.phase:hover .dot,
+.phase:focus-visible .dot {
+  fill: var(--orange);
 }
 
 .phase:focus-visible .dot {
@@ -332,21 +322,19 @@ body {
   list-style: none;
   margin: 0;
   padding: 0;
-  counter-reset: phase;
 }
 
 .phase-list li {
   position: relative;
-  padding: 0 0 16px 36px;
-  counter-increment: phase;
+  padding: 0 0 16px 28px;
 }
 
 /* Dotted orange connector between the list dots */
 .phase-list li::before {
   content: "";
   position: absolute;
-  left: 11px;
-  top: 12px;
+  left: 7px;
+  top: 6px;
   bottom: -6px;
   border-left: 3px dotted var(--orange);
 }
@@ -356,26 +344,19 @@ body {
 }
 
 .phase-list li::after {
-  content: counter(phase);
+  content: "";
   position: absolute;
-  left: 0;
-  top: 0;
-  width: 25px;
-  height: 25px;
+  left: 1px;
+  top: 4px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   background: var(--white);
   border: 3px solid var(--orange);
-  box-sizing: border-box;
-  color: var(--orange);
-  font-size: 13px;
-  font-weight: 900;
-  line-height: 19px;
-  text-align: center;
 }
 
 .phase-list li.is-done::after {
   background: var(--orange);
-  color: var(--white);
 }
 
 .phase-list li.is-next {
@@ -429,7 +410,6 @@ body {
   /* Labels inside the SVG get too small to read; the list takes over */
   .phase-date,
   .phase-title,
-  .label-num,
   .phase .info {
     display: none;
   }

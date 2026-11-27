@@ -87,8 +87,7 @@
   var LABEL_HEIGHT = { above: 12, below: 38 }; // date line at y, first title line at y + 26
   var LINE_HEIGHT = 23; // extra height per additional title line
     var INTRO_DURATION_MS = 2200;
-  var INFO_OFFSET = 32;  // distance from a dot to its (i) badge
-  var BADGE_SPACE = 30;  // room for the number badge in front of a label's date
+  var INFO_OFFSET = 28;  // distance from a dot to its (i) badge
 
   // ---------------------------------------------------------------------------
   // Helpers
@@ -259,6 +258,7 @@
   }
 
   // True when a label block centred on (lx, ly) with width w would collide with something.
+  var phasePoints = []; // where every dot sits
   var pathSamples = []; // points along the trajectory + every phase dot and its info badge
 
   function collectPathObstacles() {
@@ -266,9 +266,13 @@
       var p = path.getPointAtLength(len);
       pathSamples.push({ cx: p.x, cy: p.y, r: 24 }); // wide enough for the rocket to pass
     }
+    // The rocket waits at the start of the path before the call opens: keep that spot clear.
+    var startPt = path.getPointAtLength(0);
+    pathSamples.push({ cx: startPt.x, cy: startPt.y, r: 46 });
     PHASES.forEach(function (phase) {
       var pt = pointForDate(phase.ts);
-      pathSamples.push({ cx: pt.x, cy: pt.y, r: 22 });
+      phasePoints.push(pt);
+      pathSamples.push({ cx: pt.x, cy: pt.y, r: 20 });
       pathSamples.push({ cx: pt.x + INFO_OFFSET, cy: pt.y, r: 16 });
     });
   }
@@ -303,45 +307,59 @@
     return Math.hypot(qx, qy);
   }
 
-  // Without connector lines a label must sit right next to its own dot, so every candidate
-  // spot is tried and the free one closest to the dot wins.
+  // A label always sits directly above or below its own dot (centred on it), so the link
+  // between label and dot is clear without numbers or connector lines.
   function findLabelOffset(pt, w, below, index) {
-    var nx = -pt.ty;
-    var ny = pt.tx;
-    var side = index % 2 === 0 ? 1 : -1;
-    var midY = (below - LABEL_HEIGHT.above) / 2; // vertical centre of the block
     var candidates = [];
-
-    // Either side of the path, perpendicular to it
-    [side, -side].forEach(function (s, k) {
-      [36, 48, 62, 78, 96, 120].forEach(function (o) {
-        candidates.push({ rx: nx * s * o, ry: ny * s * o - midY, pref: k * 4 });
+    [0, -12, 12, -24, 24, -40, 40, -60, 60, -80, 80].forEach(function (shift) {
+      [16, 26, 38, 52, 68, 86, 108].forEach(function (gap) {
+        var pref = Math.abs(shift) * 1.5;
+        candidates.push({ rx: shift, ry: -gap - below, pref: pref });           // above
+        candidates.push({ rx: shift, ry: gap + LABEL_HEIGHT.above, pref: pref }); // below
       });
     });
-    // Straight above / below
-    [34, 46, 60, 80, 100, 124].forEach(function (o) {
-      candidates.push({ rx: 0, ry: -o - below + 12, pref: 2 });
-      candidates.push({ rx: 0, ry: o, pref: 2 });
-    });
-    // Beside the dot (right side leaves room for the info badge)
-    candidates.push({ rx: INFO_OFFSET + 22 + w / 2, ry: -midY, pref: 2 });
-    candidates.push({ rx: -(20 + w / 2), ry: -midY, pref: 2 });
 
-    // Wider search around the dot, used when the spots above are all taken
-    for (var gx = -280; gx <= 280; gx += 20) {
-      for (var gy = -150; gy <= 150; gy += 12) {
-        candidates.push({ rx: gx, ry: gy, pref: 10 });
-      }
+    // Level with the dot, to its left or right (for the steep part of the path)
+    var midY = (below - LABEL_HEIGHT.above) / 2;
+    [0, 10, 22, 40, 60].forEach(function (gap) {
+      candidates.push({ rx: -(16 + gap + w / 2), ry: -midY, pref: 8 });
+      candidates.push({ rx: INFO_OFFSET + 20 + gap + w / 2, ry: -midY, pref: 8 });
+    });
+
+    // A label must be nearer to its own dot than to any other dot, so it is never read as
+    // belonging to a neighbour.
+    function nearestOtherGap(c) {
+      var min = Infinity;
+      phasePoints.forEach(function (q) {
+        if (q.x === pt.x && q.y === pt.y) return;
+        min = Math.min(min, gapToDot(pt.x + c.rx - q.x, pt.y + c.ry - q.y, w, below));
+      });
+      return min;
     }
 
     var best = null;
     candidates.forEach(function (c) {
       if (labelClashes(pt.x + c.rx, pt.y + c.ry, w, below)) return;
-      // Prefer spots close to the dot AND centred on it, so it is clear which dot a label belongs to
-      var score = gapToDot(c.rx, c.ry, w, below) + 0.6 * Math.abs(c.rx) + c.pref;
+      if (nearestOtherGap(c) < gapToDot(c.rx, c.ry, w, below) + 12) return;
+      var score = gapToDot(c.rx, c.ry, w, below) + c.pref;
       if (!best || score < best.score) best = { rx: c.rx, ry: c.ry, score: score };
     });
+    if (!best) console.warn('no clear label spot for phase', index + 1);
     return best || candidates[0];
+  }
+
+  // Titles longer than MAX_LINE characters are split over two lines (at the space nearest the middle),
+  // so labels stay narrow enough to sit side by side. A manual \n in `short` is respected.
+  var MAX_LINE = 16;
+
+  function wrapTitle(text) {
+    if (text.indexOf('\n') !== -1 || text.length <= MAX_LINE) return text.split('\n');
+    var mid = text.length / 2;
+    var best = -1;
+    for (var i = 0; i < text.length; i++) {
+      if (text[i] === ' ' && (best === -1 || Math.abs(i - mid) < Math.abs(best - mid))) best = i;
+    }
+    return best === -1 ? [text] : [text.slice(0, best), text.slice(best + 1)];
   }
 
   function buildPhase(phase, index) {
@@ -356,13 +374,8 @@
       'aria-label': dateText + ': ' + phase.title + '. ' + phase.text
     });
 
-    var number = String(index + 1);
-
-    g.appendChild(el('circle', { class: 'halo', r: 18 }));
-    g.appendChild(el('circle', { class: 'dot', r: 12 }));
-    var dotNum = el('text', { class: 'dot-num', y: 5 });
-    dotNum.textContent = number;
-    g.appendChild(dotNum);
+    g.appendChild(el('circle', { class: 'halo', r: 14 }));
+    g.appendChild(el('circle', { class: 'dot', r: 8 }));
 
     var info = el('g', { class: 'info', transform: 'translate(' + INFO_OFFSET + ',0)' });
     info.appendChild(el('circle', { r: 13 }));
@@ -371,16 +384,10 @@
     info.appendChild(iText);
     g.appendChild(info);
 
-    // The label starts with the same number as its dot, so it is always clear which belong together.
-    var badge = el('g', { class: 'label-num' });
-    badge.appendChild(el('circle', { r: 11 }));
-    var badgeText = el('text', { y: 4.5 });
-    badgeText.textContent = number;
-    badge.appendChild(badgeText);
     var dateEl = el('text', { class: 'phase-date' });
     dateEl.textContent = dateText;
     var titleEl = el('text', { class: 'phase-title' });
-    var lines = phase.short.split('\n');
+    var lines = wrapTitle(phase.short);
     var tspans = lines.map(function (line, k) {
       var t = el('tspan', { dy: k === 0 ? 0 : LINE_HEIGHT });
       t.textContent = line;
@@ -388,14 +395,13 @@
       return t;
     });
     var below = LABEL_HEIGHT.below + (lines.length - 1) * LINE_HEIGHT;
-    g.appendChild(badge);
     g.appendChild(dateEl);
     g.appendChild(titleEl);
     phasesG.appendChild(g);
 
     // Measure the real text width (after the web font has loaded), then place the label.
     var dateW = dateEl.getComputedTextLength();
-    var w = Math.max.apply(null, [dateW + BADGE_SPACE].concat(
+    var w = Math.max.apply(null, [dateW].concat(
       tspans.map(function (t) { return t.getComputedTextLength(); }))) + 16;
     if (!dateW) {
       w = Math.max.apply(null, [dateText.length].concat(lines.map(function (l) { return l.length; }))) * 10 + 24; // fallback when hidden (small screens)
@@ -403,11 +409,8 @@
     var offset = findLabelOffset(pt, w, below, index);
     placedLabels.push(labelBox(pt.x + offset.rx, pt.y + offset.ry, w, below));
 
-    // Number badge + date are centred together on the first line
-    dateEl.setAttribute('x', offset.rx + BADGE_SPACE / 2);
+    dateEl.setAttribute('x', offset.rx);
     dateEl.setAttribute('y', offset.ry);
-    badge.setAttribute('transform', 'translate(' +
-      (offset.rx + BADGE_SPACE / 2 - (dateW || dateText.length * 9) / 2 - 15) + ',' + offset.ry + ')');
     titleEl.setAttribute('y', offset.ry + 26);
     tspans.forEach(function (t) { t.setAttribute('x', offset.rx); });
 
