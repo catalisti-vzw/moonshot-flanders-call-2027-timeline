@@ -72,40 +72,30 @@ body {
 .today-badge {
   position: absolute;
   top: 18px;
-  left: 20px;
+  left: 22px;
   z-index: 4;
   display: flex;
   flex-direction: column;
-  line-height: 1.15;
-  padding: 12px 18px 14px;
-  background: var(--mint-light);
-  border-left: 5px solid var(--green);
-  border-radius: 10px;
+  line-height: 1.2;
 }
 
 .today-label {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 900;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.14em;
   color: var(--green);
 }
 
-.current-weekday {
-  margin-top: 6px;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--navy);
-}
-
 .current-date {
-  font-size: 2rem;
+  font-size: 1.3rem;
   font-weight: 900;
   color: var(--navy);
+  font-variant-numeric: tabular-nums;
 }
 
 .current-phase {
-  margin-top: 8px;
-  font-size: 0.95rem;
+  margin-top: 4px;
+  font-size: 0.875rem;
   color: var(--text-muted);
 }
 
@@ -248,7 +238,7 @@ body {
 
 .phase-date {
   fill: var(--orange);
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
 }
 
@@ -368,7 +358,7 @@ body {
   display: block;
   color: var(--orange);
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
 }
 
 .pl-title {
@@ -395,12 +385,8 @@ body {
     padding: 14px 16px 0;
   }
 
-  .today-badge {
-    margin: 12px 12px 0;
-  }
-
   .current-date {
-    font-size: 1.6rem;
+    font-size: 1.2rem;
   }
 
   .key-dates {

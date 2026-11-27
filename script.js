@@ -77,14 +77,14 @@
   // Areas phase labels must stay clear of (labels may overlap the pale ovals).
   var OBSTACLES = {
     circles: [
-      { cx: 1200, cy: 0, r: 236 }  // moon (quarter in the top right corner)
+      { cx: 1200, cy: 0, r: 230 }  // moon (quarter in the top right corner)
     ],
     rects: [
-      { x0: 0, y0: 0, x1: 330, y1: 190 } // TODAY badge (HTML overlay, top left)
+      { x0: 0, y0: 0, x1: 290, y1: 115 } // TODAY badge (HTML overlay, top left)
     ]
   };
 
-  var LABEL_HEIGHT = { above: 12, below: 38 }; // date line at y, first title line at y + 26
+  var LABEL_HEIGHT = { above: 14, below: 40 }; // date line at y, first title line at y + 28
   var LINE_HEIGHT = 23; // extra height per additional title line
     var INTRO_DURATION_MS = 2200;
   var INFO_OFFSET = 28;  // distance from a dot to its (i) badge
@@ -117,16 +117,6 @@
   function formatDate(ts) {
     var d = new Date(ts);
     return pad(d.getUTCDate()) + '/' + pad(d.getUTCMonth() + 1) + '/' + d.getUTCFullYear();
-  }
-
-  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-    'August', 'September', 'October', 'November', 'December'];
-  var WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
-  // e.g. "27 November 2026"
-  function formatLongDate(ts) {
-    var d = new Date(ts);
-    return d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
   }
 
   function phaseDateText(phase) {
@@ -176,7 +166,6 @@
   var ttTitle = tooltip.querySelector('.tt-title');
   var ttText = tooltip.querySelector('.tt-text');
   var currentDateEl = document.getElementById('currentDate');
-  var currentWeekdayEl = document.getElementById('currentWeekday');
   var currentPhaseEl = document.getElementById('currentPhase');
   var phaseList = document.getElementById('phaseList');
 
@@ -264,7 +253,7 @@
   function collectPathObstacles() {
     for (var len = 0; len <= pathLength; len += 18) {
       var p = path.getPointAtLength(len);
-      pathSamples.push({ cx: p.x, cy: p.y, r: 24 }); // wide enough for the rocket to pass
+      pathSamples.push({ cx: p.x, cy: p.y, r: 21 }); // wide enough for the rocket to pass
     }
     // The rocket waits at the start of the path before the call opens: keep that spot clear.
     var startPt = path.getPointAtLength(0);
@@ -340,7 +329,7 @@
     var best = null;
     candidates.forEach(function (c) {
       if (labelClashes(pt.x + c.rx, pt.y + c.ry, w, below)) return;
-      if (nearestOtherGap(c) < gapToDot(c.rx, c.ry, w, below) + 12) return;
+      if (nearestOtherGap(c) < gapToDot(c.rx, c.ry, w, below) + 6) return;
       var score = gapToDot(c.rx, c.ry, w, below) + c.pref;
       if (!best || score < best.score) best = { rx: c.rx, ry: c.ry, score: score };
     });
@@ -411,7 +400,7 @@
 
     dateEl.setAttribute('x', offset.rx);
     dateEl.setAttribute('y', offset.ry);
-    titleEl.setAttribute('y', offset.ry + 26);
+    titleEl.setAttribute('y', offset.ry + 28);
     tspans.forEach(function (t) { t.setAttribute('x', offset.rx); });
 
 
@@ -464,8 +453,7 @@
   }
 
   function updateStatus(now) {
-    currentDateEl.textContent = formatLongDate(now);
-    currentWeekdayEl.textContent = WEEKDAYS[new Date(now).getUTCDay()];
+    currentDateEl.textContent = formatDate(now);
     currentDateEl.setAttribute('datetime', new Date(now).toISOString().slice(0, 10));
 
     var next = null;
@@ -521,10 +509,7 @@
 
   function init() {
     collectPathObstacles();
-    // Labels are placed from the last phase to the first: the end of the path near the Moon is the
-    // most crowded, so those labels get first pick. The dots are then put back in order for Tab.
-    for (var i = PHASES.length - 1; i >= 0; i--) buildPhase(PHASES[i], i);
-    PHASES.forEach(function (phase) { phasesG.appendChild(phase.svgEl); });
+    PHASES.forEach(buildPhase);
     buildList();
     placeRocketAtLength(0);
     update(true);
