@@ -71,7 +71,7 @@
   // ---------------------------------------------------------------------------
   // Scene layouts (SVG viewBox units)
   // index.html draws the wide layout; on screens up to 700px wide the scene switches to
-  // a tall layout: ovals bottom left, moon top right, the path curving up between them.
+  // a tall layout: ovals top left, moon bottom right, the rocket travelling down between them.
   // `earth` and `moon` are transforms that move/scale those drawings from their wide position.
   // ---------------------------------------------------------------------------
 
@@ -92,13 +92,13 @@
     },
     narrow: {
       view: { w: 400, h: 800, margin: 6 },
-      path: 'M 78 700 C 80 470, 312 400, 312 80',
-      earth: 'translate(0,800) scale(0.72) translate(0,-720)',
-      moon: 'translate(400,0) scale(0.55) translate(-1200,0)',
+      path: 'M 85 110 C 80 330, 312 400, 312 720',
+      earth: 'scale(0.72,-0.72) translate(0,-720)',                  // ovals in the top left corner
+      moon: 'translate(400,800) scale(0.55) translate(-1200,0)',     // moon in the bottom right corner
       rocketScale: 0.62,
       label: { above: 10, below: 27, titleOffset: 18, line: 16, info: 22, maxLine: 30, abovePref: 30, besidePref: 0, topFirst: true, levelRule: true },
       obstacles: {
-        circles: [{ cx: 400, cy: 0, r: 132 }],           // moon
+        circles: [{ cx: 400, cy: 800, r: 132 }],         // moon
         rects: []                                        // TODAY block sits above the drawing here
       }
     }
@@ -572,7 +572,7 @@
     pathSamples.length = 0;
     collectPathObstacles();
     if (layout.label.topFirst) {
-      // Tall layout: the stages near the Moon are the most crowded, so they are placed first.
+      // Tall layout: the stages near the Moon (bottom) are the most crowded, so they are placed first.
       // The dots are then put back in date order for keyboard (Tab) navigation.
       for (var i = PHASES.length - 1; i >= 0; i--) buildPhase(PHASES[i], i);
       PHASES.forEach(function (phase) { phasesG.appendChild(phase.svgEl); });
