@@ -17,7 +17,7 @@ All stages are in the `PHASES` list at the top of `script.js`:
 - `iso`: the date (YYYY-MM-DD). For stages with only a month, use the last day of the month.
 - `label`: optional text shown instead of the date, for example `November 2027`.
 - `short`: the label on the timeline. Use `\n` to split it over two lines.
-- `title` and `text`: shown in the "Key dates" list under the drawing on small screens (and read out by screen readers).
+- `title` and `text`: read out by screen readers.
 - `current`: shown after "Current:" at the top, from this date until the next stage.
 
 ## Previewing another date
@@ -26,7 +26,7 @@ Add `?date=YYYY-MM-DD` to the page address, for example `index.html?date=2027-06
 
 ## Embedding
 
-The timeline reports its own height to the page it is embedded in, so the iframe can always fit it exactly (on wide and narrow screens). Paste this into the page (Drupal: Full HTML text format):
+The timeline reports its own height to the page it is embedded in, so the iframe can always fit it exactly. On narrow screens the drawing keeps a readable size and can be scrolled sideways. Paste this into the page (Drupal: Full HTML text format):
 
 ```html
 <iframe id="moonshot-timeline" src="https://catalisti-vzw.github.io/moonshot-flanders-call-2027-timeline/"

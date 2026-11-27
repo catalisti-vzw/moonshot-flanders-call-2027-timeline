@@ -158,7 +158,6 @@
   var stage = document.getElementById('stage');
   var currentDateEl = document.getElementById('currentDate');
   var currentPhaseEl = document.getElementById('currentPhase');
-  var phaseList = document.getElementById('phaseList');
 
   var startTs = parseISO(START);
   var endTs = parseISO(END);
@@ -305,21 +304,6 @@
     phase.svgEl = g;
   }
 
-  function buildList() {
-    PHASES.forEach(function (phase) {
-      var li = document.createElement('li');
-      [['pl-date', phaseDateText(phase)], ['pl-title', phase.title], ['pl-text', phase.text]]
-        .forEach(function (part) {
-          var span = document.createElement('span');
-          span.className = part[0];
-          span.textContent = part[1];
-          li.appendChild(span);
-        });
-      phaseList.appendChild(li);
-      phase.listEl = li;
-    });
-  }
-
   // ---------------------------------------------------------------------------
   // Rocket and status
   // ---------------------------------------------------------------------------
@@ -349,10 +333,8 @@
       var done = phase.ts < now;
       var isNext = !done && !next;
       if (isNext) next = phase;
-      [phase.svgEl, phase.listEl].forEach(function (node) {
-        node.classList.toggle('is-done', done);
-        node.classList.toggle('is-next', isNext);
-      });
+      phase.svgEl.classList.toggle('is-done', done);
+      phase.svgEl.classList.toggle('is-next', isNext);
     });
 
     // The current stage is set by the latest milestone that has been reached.
@@ -401,7 +383,6 @@
     // The dots are then put back in date order for keyboard (Tab) navigation.
     for (var i = PHASES.length - 1; i >= 0; i--) buildPhase(PHASES[i], i);
     PHASES.forEach(function (phase) { phasesG.appendChild(phase.svgEl); });
-    buildList();
     placeRocketAtLength(0);
     update(true);
     scrollToRocket();
