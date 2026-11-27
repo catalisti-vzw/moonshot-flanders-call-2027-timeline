@@ -139,13 +139,13 @@ body {
 }
 
 @keyframes drift-a {
-  from { transform: translate(-14px, 14px); }  /* apart */
+  from { transform: translate(-4px, 4px); }    /* apart */
   to { transform: translate(4px, -4px); }      /* together */
 }
 
 @keyframes drift-b {
-  from { transform: translate(26px, -26px); }  /* apart */
-  to { transform: translate(-8px, 8px); }      /* together */
+  from { transform: translate(6px, -6px); }    /* apart */
+  to { transform: translate(-11px, 11px); }    /* together */
 }
 
 /* The moon turns slowly around its centre (the top right corner) */
@@ -312,7 +312,7 @@ body {
 
 .phase-title {
   fill: var(--navy);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
 }
 
