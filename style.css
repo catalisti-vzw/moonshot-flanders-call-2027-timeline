@@ -60,6 +60,11 @@ body {
   display: none; /* SVG elements do not honour the hidden attribute by default */
 }
 
+.scene-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .stage svg {
   display: block;
   width: 100%;
@@ -70,11 +75,8 @@ body {
 /* ---------- TODAY badge (top left) ---------- */
 
 .today-badge {
-  position: absolute;
-  top: 18px;
-  left: 22px;
-  z-index: 4;
   display: flex;
+  padding: 16px 22px 0;
   flex-direction: column;
   line-height: 1.2;
 }
@@ -231,6 +233,13 @@ body {
 }
 
 /* The next upcoming phase gets a soft pulsing ring */
+/* Thin line from a dot down to its label */
+.phase-stem {
+  stroke: var(--navy);
+  stroke-width: 1.5;
+  opacity: 0.4;
+}
+
 .phase .halo {
   fill: none;
   stroke: var(--orange);
@@ -473,10 +482,13 @@ body {
     padding: 12px;
   }
 
-  /* Badge moves above the illustration so it does not cover it */
   .today-badge {
-    position: static;
     padding: 14px 16px 0;
+  }
+
+  /* The drawing keeps a readable size and scrolls sideways */
+  .stage svg {
+    min-width: 860px;
   }
 
   .current-date {
@@ -487,29 +499,6 @@ body {
     display: block;
   }
 
-}
-
-/* Tall layout on small screens: smaller labels and (i) badges */
-.is-narrow .phase-date {
-  font-size: 14px;
-}
-
-.is-narrow .phase-title {
-  font-size: 13px;
-}
-
-.is-narrow .phase-date,
-.is-narrow .phase-title {
-  stroke-width: 4;
-}
-
-.is-narrow .phase .info circle {
-  r: 10px;
-}
-
-.is-narrow .phase .info text {
-  font-size: 12px;
-  transform: translateY(-1px);
 }
 
 @media (prefers-reduced-motion: reduce) {
