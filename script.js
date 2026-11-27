@@ -17,29 +17,29 @@
     {
       iso: '2026-12-07',
       current: 'Pre-proposal submission',
-      short: 'Call opening',
-      title: 'Opening of Call 2027',
+      short: 'Call opens',
+      title: 'Call opens',
       text: 'Call 2027 opens: pre-proposals can be submitted from this date.'
     },
     {
       iso: '2027-02-19',
       current: 'Evaluation of pre-proposals',
       short: 'Pre-proposal deadline',
-      title: 'Pre-proposals deadline',
+      title: 'Pre-proposal deadline',
       text: 'Final deadline to submit your pre-proposal for Call 2027.'
     },
     {
       iso: '2027-04-05',
       current: 'Writing the Letter of Intent',
-      short: 'Pre-proposal selection &\nopening LOI phase',
-      title: 'Pre-proposal selection & opening LOI phase',
+      short: 'Selected pre-proposals announced\n& LOI phase opens',
+      title: 'Selected pre-proposals announced & LOI phase opens',
       text: 'Applicants hear whether their pre-proposal is selected. Companies can express their interest in one or more projects by submitting a Letter of Intent (LOI).'
     },
     {
       iso: '2027-08-31',
       current: 'Evaluation of Letters of Intent',
-      short: 'Closure LOI phase',
-      title: 'Closure LOI phase',
+      short: 'LOI phase closes',
+      title: 'LOI phase closes',
       text: 'Final deadline for companies to submit Letters of Intent (LOIs).'
     },
     {
@@ -152,10 +152,6 @@
   var phasesG = document.getElementById('phases');
   var rocket = document.getElementById('rocket');
   var stage = document.getElementById('stage');
-  var tooltip = document.getElementById('tooltip');
-  var ttDate = tooltip.querySelector('.tt-date');
-  var ttTitle = tooltip.querySelector('.tt-title');
-  var ttText = tooltip.querySelector('.tt-text');
   var currentDateEl = document.getElementById('currentDate');
   var currentPhaseEl = document.getElementById('currentPhase');
   var phaseList = document.getElementById('phaseList');
@@ -184,42 +180,6 @@
     var dy = ahead.y - behind.y;
     var m = Math.hypot(dx, dy) || 1;
     return { len: len, x: p.x, y: p.y, tx: dx / m, ty: dy / m };
-  }
-
-  // ---------------------------------------------------------------------------
-  // Tooltip
-  // ---------------------------------------------------------------------------
-
-  var openAnchor = null;
-
-  function positionTooltip(anchor) {
-    var r = anchor.getBoundingClientRect();
-    var c = stage.getBoundingClientRect();
-    tooltip.hidden = false;
-
-    var half = tooltip.offsetWidth / 2;
-    var left = clamp(r.left - c.left + r.width / 2, half + 8, c.width - half - 8);
-    var roomAbove = r.top - c.top - 10;
-    var below = roomAbove < tooltip.offsetHeight + 8;
-
-    tooltip.classList.toggle('below', below);
-    tooltip.style.left = left + 'px';
-    tooltip.style.top = (below ? r.bottom - c.top + 10 : roomAbove) + 'px';
-  }
-
-  function showTooltip(phase, anchor) {
-    ttDate.textContent = phaseDateText(phase);
-    ttTitle.textContent = phase.title;
-    ttText.textContent = phase.text;
-    openAnchor = anchor;
-    positionTooltip(anchor);
-    tooltip.classList.add('visible');
-  }
-
-  function hideTooltip() {
-    tooltip.classList.remove('visible');
-    tooltip.hidden = true;
-    openAnchor = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -305,16 +265,12 @@
 
     var g = el('g', {
       class: 'phase',
-      tabindex: '0',
-      role: 'button',
+      role: 'img',
       'aria-label': dateText + ': ' + phase.title + '. ' + phase.text
     });
 
     g.appendChild(el('circle', { class: 'halo', cx: pt.x, cy: pt.y, r: 14 }));
-    var anchor = el('circle', { class: 'dot', cx: pt.x, cy: pt.y, r: 8 }); // the pop-up opens above the dot
-    g.appendChild(anchor);
-    // Invisible, larger circle around the dot so it is easy to hover or tap
-    g.appendChild(el('circle', { class: 'hit', cx: pt.x, cy: pt.y, r: 20 }));
+    g.appendChild(el('circle', { class: 'dot', cx: pt.x, cy: pt.y, r: 8 }));
 
     var dateEl = el('text', { class: 'phase-date' });
     dateEl.textContent = dateText;
@@ -341,23 +297,6 @@
     dateEl.setAttribute('y', spot.top + 12);
     titleEl.setAttribute('y', spot.top + 12 + DATE_TO_TITLE);
     tspans.forEach(function (t) { t.setAttribute('x', spot.cx); });
-
-    g.addEventListener('mouseenter', function () { showTooltip(phase, anchor); });
-    g.addEventListener('mouseleave', hideTooltip);
-    g.addEventListener('focus', function () { showTooltip(phase, anchor); });
-    g.addEventListener('blur', hideTooltip);
-    g.addEventListener('click', function (e) {
-      e.stopPropagation(); // keeps the document click handler from closing it again
-      showTooltip(phase, anchor);
-    });
-    g.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        if (openAnchor === anchor) hideTooltip(); else showTooltip(phase, anchor);
-      } else if (e.key === 'Escape') {
-        hideTooltip();
-      }
-    });
 
     phase.svgEl = g;
   }
@@ -470,11 +409,6 @@
       if (!document.hidden) update(false);
     });
 
-    document.addEventListener('click', hideTooltip); // tap elsewhere closes the tooltip (touch)
-    sceneScroll.addEventListener('scroll', hideTooltip);
-    window.addEventListener('resize', function () {
-      if (openAnchor) positionTooltip(openAnchor);
-    });
   }
 
   // Wait for the web font so that label widths are measured with the right font.

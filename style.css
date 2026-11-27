@@ -77,10 +77,10 @@ body {
 .today-badge {
   display: inline-flex;
   flex-direction: column;
-  margin: 16px 22px 0;
+  margin: 16px 22px 28px;
   padding: 10px 16px 11px;
   border-radius: 12px;
-  background: var(--green);
+  background: rgba(184, 221, 209, 0.55); /* same as the two ovals: --mint at 55% */
   line-height: 1.2;
 }
 
@@ -165,11 +165,6 @@ body {
   to { transform: rotate(360deg); }
 }
 
-/* Hover and clicks pass through the rocket, so a dot underneath it still works */
-#rocket {
-  pointer-events: none;
-}
-
 /* The rocket floats: a slow bob with a slight tilt */
 .rocket-float {
   animation: float 4s ease-in-out infinite;
@@ -218,11 +213,6 @@ body {
 
 /* ---------- Phases ---------- */
 
-.phase {
-  cursor: pointer;
-  outline: none;
-}
-
 .phase .dot {
   fill: var(--white);
   stroke: var(--orange);
@@ -255,29 +245,6 @@ body {
   100% { transform: scale(1.6); opacity: 0; }
 }
 
-.phase .hit {
-  fill: transparent;
-}
-
-/* Hovering or focusing a stage highlights its dot and label and fades the others */
-.phases-g:hover .phase:not(:hover),
-.phases-g:focus-within .phase:not(:focus) {
-  opacity: 0.3;
-}
-
-.phase {
-  transition: opacity 0.15s ease;
-}
-
-.phase:hover .dot,
-.phase:focus-visible .dot {
-  fill: var(--orange);
-}
-
-.phase:focus-visible .dot {
-  stroke: var(--navy);
-}
-
 .phase-date,
 .phase-title {
   text-anchor: middle;
@@ -298,52 +265,6 @@ body {
   fill: var(--navy);
   font-size: 23px;
   font-weight: 700;
-}
-
-/* ---------- Tooltip ---------- */
-
-.tooltip {
-  position: absolute;
-  z-index: 5;
-  width: max-content;
-  max-width: 340px;
-  background: var(--white);
-  border: 1px solid var(--mint);
-  border-radius: 10px;
-  padding: 10px 14px 12px;
-  box-shadow: 0 8px 24px rgba(25, 68, 95, 0.18);
-  transform: translate(-50%, -100%);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease-in-out;
-}
-
-/* Flipped below the anchor when there is no room above it */
-.tooltip.below {
-  transform: translate(-50%, 0);
-}
-
-.tooltip.visible {
-  opacity: 1;
-}
-
-.tt-date {
-  color: var(--orange);
-  font-weight: 700;
-  font-size: 15px;
-}
-
-.tt-title {
-  color: var(--navy);
-  font-weight: 900;
-  font-size: 18px;
-  margin: 2px 0 4px;
-}
-
-.tt-text {
-  color: var(--text-muted);
-  font-size: 16px;
-  line-height: 1.45;
 }
 
 /* ---------- Key dates list (small screens only) ---------- */
@@ -458,7 +379,7 @@ body {
   }
 
   .today-badge {
-    margin: 14px 16px 0;
+    margin: 14px 16px 20px;
   }
 
   /* The drawing keeps a readable size and scrolls sideways */

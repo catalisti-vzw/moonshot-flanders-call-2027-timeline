@@ -17,7 +17,7 @@ All stages are in the `PHASES` list at the top of `script.js`:
 - `iso`: the date (YYYY-MM-DD). For stages with only a month, use the last day of the month.
 - `label`: optional text shown instead of the date, for example `November 2027`.
 - `short`: the label on the timeline. Use `\n` to split it over two lines.
-- `title` and `text`: the pop-up shown on hover, tap or keyboard focus.
+- `title` and `text`: shown in the "Key dates" list under the drawing on small screens (and read out by screen readers).
 - `current`: shown after "Current:" at the top, from this date until the next stage.
 
 ## Previewing another date
