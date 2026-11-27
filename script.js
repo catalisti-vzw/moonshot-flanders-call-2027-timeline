@@ -40,6 +40,13 @@
       text: 'Applicants hear whether their pre-proposal is selected. Companies can express their interest in one or more projects by submitting a Letter of Intent (LOI).'
     },
     {
+      iso: '2027-06-04',
+      current: 'Evaluation of full proposals',
+      short: 'Full proposal deadline',
+      title: 'Full proposal deadline',
+      text: 'Final deadline to submit your full proposal for Call 2027.'
+    },
+    {
       iso: '2027-08-31',
       current: 'Evaluation of Letters of Intent',
       short: 'LOI phase closes',
@@ -81,7 +88,7 @@
   // Label sizes on a wide screen. On narrow screens the drawing is scaled down to fit, so the
   // labels are drawn larger (factor K) to stay readable; see layout().
   var BASE_FONT = 23;            // label font size (SVG units) on wide screens
-  var MIN_FONT_PX = 13;          // labels never get smaller than this on screen
+  var MIN_FONT_PX = 12;          // labels never get smaller than this on screen
   var MAX_LINE = 16;             // titles longer than this are split over two lines (wide screens)
   var K = 1;                     // current label scale factor
   var DATE_TO_TITLE, LINE_HEIGHT, ROCKET_SCALE;
