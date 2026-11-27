@@ -34,6 +34,11 @@ body {
   padding: 20px;
 }
 
+.embedded .page {
+  max-width: none;
+  padding: 0;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

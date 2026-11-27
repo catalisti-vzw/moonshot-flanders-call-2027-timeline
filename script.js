@@ -1,6 +1,10 @@
 (function () {
   'use strict';
 
+  // Inside an iframe (e.g. on the Moonshot website) the timeline drops its own outer padding,
+  // so it lines up with the page text and leaves no extra space around it.
+  if (window.parent !== window) document.documentElement.classList.add('embedded');
+
   // ---------------------------------------------------------------------------
   // Content — edit dates and texts here
   // ---------------------------------------------------------------------------
