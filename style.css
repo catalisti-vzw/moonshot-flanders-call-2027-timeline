@@ -233,13 +233,6 @@ body {
 }
 
 /* The next upcoming phase gets a soft pulsing ring */
-/* Thin line from a dot down to its label */
-.phase-stem {
-  stroke: var(--navy);
-  stroke-width: 1.5;
-  opacity: 0.4;
-}
-
 .phase .halo {
   fill: none;
   stroke: var(--orange);
