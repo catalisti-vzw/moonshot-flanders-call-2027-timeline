@@ -145,7 +145,7 @@ body {
 
 @keyframes drift-b {
   from { transform: translate(6px, -6px); }    /* apart */
-  to { transform: translate(-11px, 11px); }    /* together */
+  to { transform: translate(0, 0); }           /* together */
 }
 
 /* The moon turns slowly around its centre (the top right corner) */
