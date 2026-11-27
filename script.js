@@ -84,8 +84,8 @@
     ]
   };
 
-  var LABEL_HEIGHT = { above: 14, below: 40 }; // date line at y, first title line at y + 28
-  var LINE_HEIGHT = 23; // extra height per additional title line
+  var LABEL_HEIGHT = { above: 14, below: 37 }; // date line at y, first title line at y + 26
+  var LINE_HEIGHT = 20; // extra height per additional title line
     var INTRO_DURATION_MS = 2200;
   var INFO_OFFSET = 28;  // distance from a dot to its (i) badge
 
@@ -400,7 +400,7 @@
 
     dateEl.setAttribute('x', offset.rx);
     dateEl.setAttribute('y', offset.ry);
-    titleEl.setAttribute('y', offset.ry + 28);
+    titleEl.setAttribute('y', offset.ry + 26);
     tspans.forEach(function (t) { t.setAttribute('x', offset.rx); });
 
 

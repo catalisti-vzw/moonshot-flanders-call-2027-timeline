@@ -24,13 +24,14 @@
       <svg id="scene" viewBox="0 0 1200 720" role="group" aria-label="Rocket trajectory from Earth to the Moon, with the phases of Call 2027 marked along the path">
         <!-- Bottom left: the two overlapping ovals (house style) -->
         <g id="earth" aria-hidden="true">
-          <circle cx="0" cy="720" r="150" class="oval"/>
-          <circle cx="25" cy="695" r="150" class="oval"/>
+          <circle cx="0" cy="720" r="150" class="oval oval-a"/>
+          <circle cx="25" cy="695" r="150" class="oval oval-b"/>
         </g>
 
         <!-- Top right: the moon, centred on the corner so only a quarter is visible
              (drawn moon is shown until assets/moon.webp has loaded) -->
         <g id="moon" aria-hidden="true">
+          <g class="moon-spin">
           <g id="moonFallback">
             <circle cx="1200" cy="0" r="230" fill="#DDDDDD"/>
             <circle cx="1100" cy="50" r="26" fill="#B8B8B8"/>
@@ -41,6 +42,7 @@
           </g>
           <image id="moonImage" href="assets/moon.webp" x="970" y="-230" width="460" height="460"
                  preserveAspectRatio="xMidYMid meet" hidden/>
+          </g>
         </g>
 
         <!-- Trajectory: dotted orange line from the Earth onto the Moon, with the travelled part drawn solid on top -->
@@ -54,6 +56,14 @@
 
         <!-- Rocket, positioned by script.js. Both versions point to the right (0°). -->
         <g id="rocket" aria-hidden="true">
+          <!-- script.js moves #rocket along the path; .rocket-float adds the gentle floating motion -->
+          <g class="rocket-float">
+          <!-- Exhaust puffs drifting away behind the rocket -->
+          <g class="exhaust">
+            <circle class="puff" cx="-30" cy="0" r="5"/>
+            <circle class="puff" cx="-30" cy="0" r="5"/>
+            <circle class="puff" cx="-30" cy="0" r="5"/>
+          </g>
           <g id="rocketFallback">
             <path class="flame" d="M -13 -5 L -27 0 L -13 5 Z"/>
             <path class="rocket-body" d="M 24 0 C 16 -10 0 -12 -13 -8 L -13 8 C 0 12 16 10 24 0 Z"/>
@@ -64,6 +74,7 @@
           <!-- assets/rocket.png (Moonshot rocket) points up-right at about 54°, so it is turned to point right -->
           <image id="rocketImage" href="assets/rocket.png" x="-38" y="-38" width="76" height="76"
                  transform="rotate(54)" preserveAspectRatio="xMidYMid meet" hidden/>
+          </g>
         </g>
       </svg>
 
