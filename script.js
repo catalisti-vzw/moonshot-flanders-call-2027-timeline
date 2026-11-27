@@ -77,17 +77,18 @@
   // Areas phase labels must stay clear of (labels may overlap the pale ovals).
   var OBSTACLES = {
     circles: [
-      { cx: 1200, cy: 0, r: 240 }  // moon (quarter in the top right corner)
+      { cx: 1200, cy: 0, r: 236 }  // moon (quarter in the top right corner)
     ],
     rects: [
-      { x0: 0, y0: 0, x1: 300, y1: 120 } // TODAY badge (HTML overlay, top left)
+      { x0: 0, y0: 0, x1: 330, y1: 190 } // TODAY badge (HTML overlay, top left)
     ]
   };
 
   var LABEL_HEIGHT = { above: 12, below: 38 }; // date line at y, first title line at y + 26
   var LINE_HEIGHT = 23; // extra height per additional title line
     var INTRO_DURATION_MS = 2200;
-  var LAST_PHASE_AT = 0.92; // share of the path where the last phase sits; the rest is the final glide to the Moon
+  var INFO_OFFSET = 32;  // distance from a dot to its (i) badge
+  var BADGE_SPACE = 30;  // room for the number badge in front of a label's date
 
   // ---------------------------------------------------------------------------
   // Helpers
@@ -117,6 +118,16 @@
   function formatDate(ts) {
     var d = new Date(ts);
     return pad(d.getUTCDate()) + '/' + pad(d.getUTCMonth() + 1) + '/' + d.getUTCFullYear();
+  }
+
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+    'August', 'September', 'October', 'November', 'December'];
+  var WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  // e.g. "27 November 2026"
+  function formatLongDate(ts) {
+    var d = new Date(ts);
+    return d.getUTCDate() + ' ' + MONTHS[d.getUTCMonth()] + ' ' + d.getUTCFullYear();
   }
 
   function phaseDateText(phase) {
@@ -166,6 +177,7 @@
   var ttTitle = tooltip.querySelector('.tt-title');
   var ttText = tooltip.querySelector('.tt-text');
   var currentDateEl = document.getElementById('currentDate');
+  var currentWeekdayEl = document.getElementById('currentWeekday');
   var currentPhaseEl = document.getElementById('currentPhase');
   var phaseList = document.getElementById('phaseList');
 
@@ -181,31 +193,10 @@
   useImageWhenAvailable(document.getElementById('rocketImage'), document.getElementById('rocketFallback'));
 
   // Point on the trajectory for a given date, plus the direction of travel there.
-  // The phases are spread evenly along the path (not to scale in time), so dots never bunch up.
-  // Between two phases the rocket moves a little every day, at whatever pace fits that stretch.
-  var anchors = [];
-
-  function buildAnchors() {
-    var n = PHASES.length;
-    if (startTs < PHASES[0].ts) anchors.push({ ts: startTs, f: 0 });
-    PHASES.forEach(function (phase, i) {
-      anchors.push({ ts: phase.ts, f: n === 1 ? 0 : (i / (n - 1)) * LAST_PHASE_AT });
-    });
-    anchors.push({ ts: endTs, f: 1 });
-  }
-
-  function fractionForDate(ts) {
-    if (ts <= anchors[0].ts) return anchors[0].f;
-    for (var i = 1; i < anchors.length; i++) {
-      var a = anchors[i - 1];
-      var b = anchors[i];
-      if (ts <= b.ts) return a.f + (b.f - a.f) * (ts - a.ts) / (b.ts - a.ts);
-    }
-    return 1;
-  }
-
   function pointForDate(ts) {
-    var len = fractionForDate(ts) * pathLength;
+    // Positions are in proportion to time: each day moves the rocket the same distance.
+    var f = clamp((ts - startTs) / (endTs - startTs), 0, 1);
+    var len = f * pathLength;
     var p = path.getPointAtLength(len);
     var ahead = path.getPointAtLength(Math.min(pathLength, len + 1));
     var behind = path.getPointAtLength(Math.max(0, len - 1));
@@ -277,8 +268,8 @@
     }
     PHASES.forEach(function (phase) {
       var pt = pointForDate(phase.ts);
-      pathSamples.push({ cx: pt.x, cy: pt.y, r: 20 });
-      pathSamples.push({ cx: pt.x + 28, cy: pt.y, r: 16 });
+      pathSamples.push({ cx: pt.x, cy: pt.y, r: 22 });
+      pathSamples.push({ cx: pt.x + INFO_OFFSET, cy: pt.y, r: 16 });
     });
   }
 
@@ -333,7 +324,7 @@
       candidates.push({ rx: 0, ry: o, pref: 2 });
     });
     // Beside the dot (right side leaves room for the info badge)
-    candidates.push({ rx: 48 + w / 2, ry: -midY, pref: 2 });
+    candidates.push({ rx: INFO_OFFSET + 22 + w / 2, ry: -midY, pref: 2 });
     candidates.push({ rx: -(20 + w / 2), ry: -midY, pref: 2 });
 
     // Wider search around the dot, used when the spots above are all taken
@@ -365,16 +356,27 @@
       'aria-label': dateText + ': ' + phase.title + '. ' + phase.text
     });
 
-    g.appendChild(el('circle', { class: 'halo', r: 14 }));
-    g.appendChild(el('circle', { class: 'dot', r: 8 }));
+    var number = String(index + 1);
 
-    var info = el('g', { class: 'info', transform: 'translate(28,0)' });
+    g.appendChild(el('circle', { class: 'halo', r: 18 }));
+    g.appendChild(el('circle', { class: 'dot', r: 12 }));
+    var dotNum = el('text', { class: 'dot-num', y: 5 });
+    dotNum.textContent = number;
+    g.appendChild(dotNum);
+
+    var info = el('g', { class: 'info', transform: 'translate(' + INFO_OFFSET + ',0)' });
     info.appendChild(el('circle', { r: 13 }));
     var iText = el('text', { y: 5.4 });
     iText.textContent = 'i';
     info.appendChild(iText);
     g.appendChild(info);
 
+    // The label starts with the same number as its dot, so it is always clear which belong together.
+    var badge = el('g', { class: 'label-num' });
+    badge.appendChild(el('circle', { r: 11 }));
+    var badgeText = el('text', { y: 4.5 });
+    badgeText.textContent = number;
+    badge.appendChild(badgeText);
     var dateEl = el('text', { class: 'phase-date' });
     dateEl.textContent = dateText;
     var titleEl = el('text', { class: 'phase-title' });
@@ -386,21 +388,26 @@
       return t;
     });
     var below = LABEL_HEIGHT.below + (lines.length - 1) * LINE_HEIGHT;
+    g.appendChild(badge);
     g.appendChild(dateEl);
     g.appendChild(titleEl);
     phasesG.appendChild(g);
 
     // Measure the real text width (after the web font has loaded), then place the label.
-    var w = Math.max.apply(null, [dateEl.getComputedTextLength()].concat(
+    var dateW = dateEl.getComputedTextLength();
+    var w = Math.max.apply(null, [dateW + BADGE_SPACE].concat(
       tspans.map(function (t) { return t.getComputedTextLength(); }))) + 16;
-    if (!w || w < 20) {
+    if (!dateW) {
       w = Math.max.apply(null, [dateText.length].concat(lines.map(function (l) { return l.length; }))) * 10 + 24; // fallback when hidden (small screens)
     }
     var offset = findLabelOffset(pt, w, below, index);
     placedLabels.push(labelBox(pt.x + offset.rx, pt.y + offset.ry, w, below));
 
-    dateEl.setAttribute('x', offset.rx);
+    // Number badge + date are centred together on the first line
+    dateEl.setAttribute('x', offset.rx + BADGE_SPACE / 2);
     dateEl.setAttribute('y', offset.ry);
+    badge.setAttribute('transform', 'translate(' +
+      (offset.rx + BADGE_SPACE / 2 - (dateW || dateText.length * 9) / 2 - 15) + ',' + offset.ry + ')');
     titleEl.setAttribute('y', offset.ry + 26);
     tspans.forEach(function (t) { t.setAttribute('x', offset.rx); });
 
@@ -454,7 +461,8 @@
   }
 
   function updateStatus(now) {
-    currentDateEl.textContent = formatDate(now);
+    currentDateEl.textContent = formatLongDate(now);
+    currentWeekdayEl.textContent = WEEKDAYS[new Date(now).getUTCDay()];
     currentDateEl.setAttribute('datetime', new Date(now).toISOString().slice(0, 10));
 
     var next = null;
@@ -509,9 +517,11 @@
   // ---------------------------------------------------------------------------
 
   function init() {
-    buildAnchors();
     collectPathObstacles();
-    PHASES.forEach(buildPhase);
+    // Labels are placed from the last phase to the first: the end of the path near the Moon is the
+    // most crowded, so those labels get first pick. The dots are then put back in order for Tab.
+    for (var i = PHASES.length - 1; i >= 0; i--) buildPhase(PHASES[i], i);
+    PHASES.forEach(function (phase) { phasesG.appendChild(phase.svgEl); });
     buildList();
     placeRocketAtLength(0);
     update(true);

@@ -72,29 +72,39 @@ body {
 .today-badge {
   position: absolute;
   top: 18px;
-  left: 22px;
+  left: 20px;
   z-index: 4;
   display: flex;
   flex-direction: column;
-  line-height: 1.2;
+  line-height: 1.15;
+  padding: 12px 18px 14px;
+  background: var(--mint-light);
+  border-left: 5px solid var(--green);
+  border-radius: 10px;
 }
 
 .today-label {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 900;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
   color: var(--green);
 }
 
+.current-weekday {
+  margin-top: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
 .current-date {
-  font-size: 1.6rem;
+  font-size: 2rem;
   font-weight: 900;
   color: var(--navy);
-  font-variant-numeric: tabular-nums;
 }
 
 .current-phase {
-  margin-top: 4px;
+  margin-top: 8px;
   font-size: 0.95rem;
   color: var(--text-muted);
 }
@@ -160,6 +170,31 @@ body {
 .phase.is-done .dot {
   fill: var(--orange);
   stroke: var(--white);
+}
+
+/* Number inside the dot */
+.dot-num {
+  fill: var(--orange);
+  font-size: 14px;
+  font-weight: 900;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.phase.is-done .dot-num {
+  fill: var(--white);
+}
+
+/* Matching number in front of the label's date */
+.label-num circle {
+  fill: var(--orange);
+}
+
+.label-num text {
+  fill: var(--white);
+  font-size: 13px;
+  font-weight: 900;
+  text-anchor: middle;
 }
 
 /* The next upcoming phase gets a soft pulsing ring */
@@ -297,19 +332,21 @@ body {
   list-style: none;
   margin: 0;
   padding: 0;
+  counter-reset: phase;
 }
 
 .phase-list li {
   position: relative;
-  padding: 0 0 16px 28px;
+  padding: 0 0 16px 36px;
+  counter-increment: phase;
 }
 
 /* Dotted orange connector between the list dots */
 .phase-list li::before {
   content: "";
   position: absolute;
-  left: 7px;
-  top: 6px;
+  left: 11px;
+  top: 12px;
   bottom: -6px;
   border-left: 3px dotted var(--orange);
 }
@@ -319,19 +356,26 @@ body {
 }
 
 .phase-list li::after {
-  content: "";
+  content: counter(phase);
   position: absolute;
-  left: 1px;
-  top: 4px;
-  width: 11px;
-  height: 11px;
+  left: 0;
+  top: 0;
+  width: 25px;
+  height: 25px;
   border-radius: 50%;
   background: var(--white);
   border: 3px solid var(--orange);
+  box-sizing: border-box;
+  color: var(--orange);
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 19px;
+  text-align: center;
 }
 
 .phase-list li.is-done::after {
   background: var(--orange);
+  color: var(--white);
 }
 
 .phase-list li.is-next {
@@ -370,8 +414,12 @@ body {
     padding: 14px 16px 0;
   }
 
+  .today-badge {
+    margin: 12px 12px 0;
+  }
+
   .current-date {
-    font-size: 1.35rem;
+    font-size: 1.6rem;
   }
 
   .key-dates {
@@ -381,6 +429,7 @@ body {
   /* Labels inside the SVG get too small to read; the list takes over */
   .phase-date,
   .phase-title,
+  .label-num,
   .phase .info {
     display: none;
   }
