@@ -171,16 +171,6 @@ body {
   100% { transform: translate(0, 0) rotate(0deg); }
 }
 
-/* Waiting on the launch pad: standing still, no exhaust */
-#rocket.is-waiting .rocket-float {
-  animation: none;
-  clip-path: url(#noFlames);
-}
-
-#rocket.is-waiting .exhaust {
-  display: none;
-}
-
 /* Small exhaust puffs drift back from the tail and fade out */
 .puff {
   fill: var(--orange);
