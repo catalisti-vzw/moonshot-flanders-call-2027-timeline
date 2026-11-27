@@ -131,11 +131,11 @@ body {
 /* The two ovals slowly move towards and away from each other,
    so they overlap more, then less */
 .oval-a {
-  animation: drift-a 14s ease-in-out infinite alternate;
+  animation: drift-a 30s ease-in-out infinite alternate;
 }
 
 .oval-b {
-  animation: drift-b 14s ease-in-out infinite alternate;
+  animation: drift-b 30s ease-in-out infinite alternate;
 }
 
 @keyframes drift-a {
