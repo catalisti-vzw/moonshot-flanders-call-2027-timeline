@@ -1,0 +1,399 @@
+/* Moonshot Flanders — Call 2027 timeline
+   Colours and typeface follow the Moonshot colour palette. */
+
+:root {
+  /* Primary */
+  --navy: #19445F;
+  /* Supporting */
+  --mint: #B8DDD1;
+  --mint-light: #E8F2EF;
+  --blue-light: #EAF2FA;
+  /* Accents */
+  --orange: #FBAA00;
+  --green: #54B897;
+
+  --white: #FFFFFF;
+  --text-muted: #4A6678;
+  --font: "Lato", "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--white);
+  color: var(--navy);
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Stage ---------- */
+
+.stage {
+  position: relative;
+  border: 1px solid var(--mint-light);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--white);
+}
+
+.stage svg [hidden] {
+  display: none; /* SVG elements do not honour the hidden attribute by default */
+}
+
+.stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  font-family: inherit;
+}
+
+/* ---------- TODAY badge (top left) ---------- */
+
+.today-badge {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.today-label {
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  color: var(--green);
+}
+
+.current-date {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+}
+
+.current-phase {
+  margin-top: 4px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.current-phase strong {
+  color: var(--navy);
+}
+
+/* ---------- Scene ---------- */
+
+.oval {
+  fill: var(--mint);
+  opacity: 0.55;
+}
+
+.trajectory {
+  fill: none;
+  stroke: var(--orange);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 14; /* round caps turn this into a row of dots */
+}
+
+.progress {
+  fill: none;
+  stroke: var(--orange);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 0 100000; /* set by script.js */
+}
+
+.rocket-body {
+  fill: var(--navy);
+}
+
+.flame {
+  fill: var(--orange);
+  transform-box: fill-box;
+  transform-origin: 100% 50%;
+  animation: flick 0.22s infinite alternate ease-in-out;
+}
+
+@keyframes flick {
+  from { transform: scaleX(0.65); }
+  to { transform: scaleX(1.2); }
+}
+
+/* ---------- Phases ---------- */
+
+.phase {
+  cursor: pointer;
+  outline: none;
+}
+
+.phase .dot {
+  fill: var(--white);
+  stroke: var(--orange);
+  stroke-width: 3;
+  transition: fill 0.2s ease;
+}
+
+/* Phases the rocket has already passed */
+.phase.is-done .dot {
+  fill: var(--orange);
+  stroke: var(--white);
+}
+
+/* The next upcoming phase gets a soft pulsing ring */
+.phase .halo {
+  fill: none;
+  stroke: var(--orange);
+  stroke-width: 2;
+  opacity: 0;
+}
+
+.phase.is-next .halo {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulse 2.4s ease-out infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.6); opacity: 0.7; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.phase .info circle {
+  fill: var(--white);
+  stroke: var(--navy);
+  stroke-width: 1.5;
+  transition: fill 0.15s ease;
+}
+
+.phase .info text {
+  fill: var(--navy);
+  font-size: 15px;
+  font-weight: 700;
+  font-style: italic;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.phase:hover .info circle,
+.phase:focus-visible .info circle {
+  fill: var(--navy);
+}
+
+.phase:hover .info text,
+.phase:focus-visible .info text {
+  fill: var(--white);
+}
+
+.phase:focus-visible .dot {
+  stroke: var(--navy);
+}
+
+.phase-date,
+.phase-title {
+  text-anchor: middle;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: var(--white);
+  stroke-width: 6;
+  stroke-linejoin: round;
+}
+
+.phase-date {
+  fill: var(--orange);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.phase-title {
+  fill: var(--navy);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+/* ---------- Tooltip ---------- */
+
+.tooltip {
+  position: absolute;
+  z-index: 5;
+  width: max-content;
+  max-width: 300px;
+  background: var(--white);
+  border: 1px solid var(--mint);
+  border-top: 4px solid var(--orange);
+  border-radius: 10px;
+  padding: 10px 14px 12px;
+  box-shadow: 0 8px 24px rgba(25, 68, 95, 0.18);
+  transform: translate(-50%, -100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease-in-out;
+}
+
+/* Flipped below the anchor when there is no room above it */
+.tooltip.below {
+  transform: translate(-50%, 0);
+}
+
+.tooltip.visible {
+  opacity: 1;
+}
+
+.tt-date {
+  color: var(--orange);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.tt-title {
+  color: var(--navy);
+  font-weight: 900;
+  font-size: 16px;
+  margin: 2px 0 4px;
+}
+
+.tt-text {
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+/* ---------- Key dates list (small screens only) ---------- */
+
+.key-dates {
+  display: none;
+  margin-top: 20px;
+}
+
+.key-dates-title {
+  margin: 0 0 12px;
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.phase-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.phase-list li {
+  position: relative;
+  padding: 0 0 16px 28px;
+}
+
+/* Dotted orange connector between the list dots */
+.phase-list li::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 6px;
+  bottom: -6px;
+  border-left: 3px dotted var(--orange);
+}
+
+.phase-list li:last-child::before {
+  display: none;
+}
+
+.phase-list li::after {
+  content: "";
+  position: absolute;
+  left: 1px;
+  top: 4px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 3px solid var(--orange);
+}
+
+.phase-list li.is-done::after {
+  background: var(--orange);
+}
+
+.phase-list li.is-next {
+  background: var(--mint-light);
+  border-radius: 8px;
+}
+
+.pl-date {
+  display: block;
+  color: var(--orange);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.pl-title {
+  display: block;
+  font-weight: 900;
+}
+
+.pl-text {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding: 12px;
+  }
+
+  /* Badge moves above the illustration so it does not cover it */
+  .today-badge {
+    position: static;
+    padding: 14px 16px 0;
+  }
+
+  .current-date {
+    font-size: 1.35rem;
+  }
+
+  .key-dates {
+    display: block;
+  }
+
+  /* Labels inside the SVG get too small to read; the list takes over */
+  .phase-date,
+  .phase-title,
+  .phase .info {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flame,
+  .phase.is-next .halo {
+    animation: none;
+  }
+
+  .phase.is-next .halo {
+    opacity: 0.5;
+    transform: scale(1.3);
+  }
+}
