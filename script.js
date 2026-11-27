@@ -69,25 +69,51 @@
   ];
 
   // ---------------------------------------------------------------------------
-  // Scene geometry — keep in sync with index.html (SVG viewBox units)
+  // Scene layouts (SVG viewBox units)
+  // index.html draws the wide layout; on screens up to 700px wide the scene switches to
+  // a tall layout: ovals bottom left, moon top right, the path curving up between them.
+  // `earth` and `moon` are transforms that move/scale those drawings from their wide position.
   // ---------------------------------------------------------------------------
 
-  var VIEW = { w: 1200, h: 720, margin: 8 };
+  var NARROW_QUERY = '(max-width: 700px)';
 
-  // Areas phase labels must stay clear of (labels may overlap the pale ovals).
-  var OBSTACLES = {
-    circles: [
-      { cx: 1200, cy: 0, r: 230 }  // moon (quarter in the top right corner)
-    ],
-    rects: [
-      { x0: 0, y0: 0, x1: 290, y1: 115 } // TODAY badge (HTML overlay, top left)
-    ]
+  var LAYOUTS = {
+    wide: {
+      view: { w: 1200, h: 720, margin: 8 },
+      path: 'M 140 575 Q 560 20 1055 140',
+      earth: '',
+      moon: '',
+      rocketScale: 1,
+      label: { above: 14, below: 42, titleOffset: 28, line: 24, info: 28, maxLine: 16, abovePref: 0, besidePref: 8 },
+      obstacles: { // areas labels must stay clear of (labels may overlap the pale ovals)
+        circles: [{ cx: 1200, cy: 0, r: 230 }],          // moon
+        rects: [{ x0: 0, y0: 0, x1: 290, y1: 115 }]      // TODAY block (top left)
+      }
+    },
+    narrow: {
+      view: { w: 400, h: 800, margin: 6 },
+      path: 'M 78 700 C 80 470, 312 400, 312 80',
+      earth: 'translate(0,800) scale(0.72) translate(0,-720)',
+      moon: 'translate(400,0) scale(0.55) translate(-1200,0)',
+      rocketScale: 0.62,
+      label: { above: 10, below: 27, titleOffset: 18, line: 16, info: 22, maxLine: 30, abovePref: 30, besidePref: 0, topFirst: true, levelRule: true },
+      obstacles: {
+        circles: [{ cx: 400, cy: 0, r: 132 }],           // moon
+        rects: []                                        // TODAY block sits above the drawing here
+      }
+    }
   };
 
-  var LABEL_HEIGHT = { above: 14, below: 42 }; // date line at y, first title line at y + 28
+  var layout = LAYOUTS.wide;
+  var VIEW = layout.view;
+  var OBSTACLES = layout.obstacles;
+
+  // Label metrics, set per layout by applyLayout(): date line at y, first title line at y + titleOffset
+  var LABEL_HEIGHT = { above: 14, below: 42 };
   var LINE_HEIGHT = 24; // extra height per additional title line
+  var TITLE_OFFSET = 28;
     var INTRO_DURATION_MS = 2200;
-  var INFO_OFFSET = 28;  // distance from a dot to its (i) badge
+  var INFO_OFFSET = 28;  // distance from a dot to its (i) badge (set per layout)
 
   // ---------------------------------------------------------------------------
   // Helpers
@@ -172,6 +198,9 @@
   var startTs = parseISO(START);
   var endTs = parseISO(END);
   var pathLength = path.getTotalLength();
+  var scene = document.getElementById('scene');
+  var earthG = document.getElementById('earth');
+  var moonG = document.getElementById('moon');
 
   PHASES.forEach(function (phase) {
     phase.ts = parseISO(phase.iso);
@@ -296,13 +325,14 @@
     return Math.hypot(qx, qy);
   }
 
-  // A label always sits directly above or below its own dot (centred on it), so the link
-  // between label and dot is clear without numbers or connector lines.
+  // A label sits directly above/below its own dot (centred on it) or level with it, so the link
+  // between label and dot is clear without numbers or connector lines. The wide layout prefers
+  // above/below; the tall layout prefers level with the dot (see `abovePref`/`besidePref`).
   function findLabelOffset(pt, w, below, index) {
     var candidates = [];
     [0, -12, 12, -24, 24, -40, 40, -60, 60, -80, 80].forEach(function (shift) {
       [16, 26, 38, 52, 68, 86, 108].forEach(function (gap) {
-        var pref = Math.abs(shift) * 1.5;
+        var pref = Math.abs(shift) * 1.5 + layout.label.abovePref;
         candidates.push({ rx: shift, ry: -gap - below, pref: pref });           // above
         candidates.push({ rx: shift, ry: gap + LABEL_HEIGHT.above, pref: pref }); // below
       });
@@ -311,8 +341,8 @@
     // Level with the dot, to its left or right (for the steep part of the path)
     var midY = (below - LABEL_HEIGHT.above) / 2;
     [0, 10, 22, 40, 60].forEach(function (gap) {
-      candidates.push({ rx: -(16 + gap + w / 2), ry: -midY, pref: 8 });
-      candidates.push({ rx: INFO_OFFSET + 20 + gap + w / 2, ry: -midY, pref: 8 });
+      candidates.push({ rx: -(16 + gap + w / 2), ry: -midY, pref: layout.label.besidePref, level: true });
+      candidates.push({ rx: INFO_OFFSET + 20 + gap + w / 2, ry: -midY, pref: layout.label.besidePref, level: true });
     });
 
     // A label must be nearer to its own dot than to any other dot, so it is never read as
@@ -329,7 +359,16 @@
     var best = null;
     candidates.forEach(function (c) {
       if (labelClashes(pt.x + c.rx, pt.y + c.ry, w, below)) return;
-      if (nearestOtherGap(c) < gapToDot(c.rx, c.ry, w, below) + 6) return;
+      if (c.level && layout.label.levelRule) {
+        // Tall layout, level with its own dot: clear as long as no other dot sits at the same height
+        var box = labelBox(pt.x + c.rx, pt.y + c.ry, w, below);
+        var sameHeight = phasePoints.some(function (q) {
+          return !(q.x === pt.x && q.y === pt.y) && q.y > box.y0 - 10 && q.y < box.y1 + 10;
+        });
+        if (sameHeight) return;
+      } else if (nearestOtherGap(c) < gapToDot(c.rx, c.ry, w, below) + 6) {
+        return;
+      }
       var score = gapToDot(c.rx, c.ry, w, below) + c.pref;
       if (!best || score < best.score) best = { rx: c.rx, ry: c.ry, score: score };
     });
@@ -339,7 +378,7 @@
 
   // Titles longer than MAX_LINE characters are split over two lines (at the space nearest the middle),
   // so labels stay narrow enough to sit side by side. A manual \n in `short` is respected.
-  var MAX_LINE = 16;
+  var MAX_LINE = 16; // set per layout
 
   function wrapTitle(text) {
     if (text.indexOf('\n') !== -1 || text.length <= MAX_LINE) return text.split('\n');
@@ -400,7 +439,7 @@
 
     dateEl.setAttribute('x', offset.rx);
     dateEl.setAttribute('y', offset.ry);
-    titleEl.setAttribute('y', offset.ry + 28);
+    titleEl.setAttribute('y', offset.ry + TITLE_OFFSET);
     tspans.forEach(function (t) { t.setAttribute('x', offset.rx); });
 
 
@@ -448,7 +487,7 @@
     var a = path.getPointAtLength(Math.min(pathLength, len + 1));
     var b = path.getPointAtLength(Math.max(0, len - 1));
     var angle = Math.atan2(a.y - b.y, a.x - b.x) * 180 / Math.PI;
-    rocket.setAttribute('transform', 'translate(' + p.x + ',' + p.y + ') rotate(' + angle + ')');
+    rocket.setAttribute('transform', 'translate(' + p.x + ',' + p.y + ') rotate(' + angle + ') scale(' + layout.rocketScale + ')');
     progress.setAttribute('stroke-dasharray', len + ' ' + (pathLength + 10));
   }
 
@@ -507,12 +546,56 @@
   // Start
   // ---------------------------------------------------------------------------
 
-  function init() {
+  // Switches the scene to the wide or tall layout and (re)builds the phase dots and labels.
+  function applyLayout(name) {
+    layout = LAYOUTS[name];
+    VIEW = layout.view;
+    OBSTACLES = layout.obstacles;
+    LABEL_HEIGHT = { above: layout.label.above, below: layout.label.below };
+    LINE_HEIGHT = layout.label.line;
+    TITLE_OFFSET = layout.label.titleOffset;
+    INFO_OFFSET = layout.label.info;
+    MAX_LINE = layout.label.maxLine;
+    scene.classList.toggle('is-narrow', name === 'narrow');
+
+    scene.setAttribute('viewBox', '0 0 ' + VIEW.w + ' ' + VIEW.h);
+    path.setAttribute('d', layout.path);
+    progress.setAttribute('d', layout.path);
+    earthG.setAttribute('transform', layout.earth);
+    moonG.setAttribute('transform', layout.moon);
+    pathLength = path.getTotalLength();
+
+    hideTooltip();
+    phasesG.textContent = '';
+    placedLabels.length = 0;
+    phasePoints.length = 0;
+    pathSamples.length = 0;
     collectPathObstacles();
-    PHASES.forEach(buildPhase);
+    if (layout.label.topFirst) {
+      // Tall layout: the stages near the Moon are the most crowded, so they are placed first.
+      // The dots are then put back in date order for keyboard (Tab) navigation.
+      for (var i = PHASES.length - 1; i >= 0; i--) buildPhase(PHASES[i], i);
+      PHASES.forEach(function (phase) { phasesG.appendChild(phase.svgEl); });
+    } else {
+      PHASES.forEach(buildPhase);
+    }
+  }
+
+  function init() {
+    var narrow = window.matchMedia(NARROW_QUERY);
+    applyLayout(narrow.matches ? 'narrow' : 'wide');
     buildList();
     placeRocketAtLength(0);
     update(true);
+
+    // Rebuild when the screen crosses the breakpoint (e.g. a phone turned sideways).
+    function onBreakpoint() {
+      applyLayout(narrow.matches ? 'narrow' : 'wide');
+      lastDay = null;
+      update(false);
+    }
+    if (narrow.addEventListener) narrow.addEventListener('change', onBreakpoint);
+    else narrow.addListener(onBreakpoint);
 
     // Check once a minute whether the day has changed (e.g. a page left open overnight),
     // and immediately when the visitor returns to the tab.
@@ -527,7 +610,7 @@
     });
   }
 
-  // Wait for Lato so that label widths are measured with the right font.
+  // Wait for the web font so that label widths are measured with the right font.
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(init, init);
   } else {

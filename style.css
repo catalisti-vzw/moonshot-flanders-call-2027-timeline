@@ -150,8 +150,8 @@ body {
 
 /* The moon turns slowly around its centre (the top right corner) */
 .moon-spin {
-  transform-box: view-box;
-  transform-origin: 1200px 0px;
+  transform-box: fill-box;   /* the moon's own centre, in both layouts */
+  transform-origin: center;
   animation: spin 240s linear infinite;
 }
 
@@ -487,12 +487,29 @@ body {
     display: block;
   }
 
-  /* Labels inside the SVG get too small to read; the list takes over */
-  .phase-date,
-  .phase-title,
-  .phase .info {
-    display: none;
-  }
+}
+
+/* Tall layout on small screens: smaller labels and (i) badges */
+.is-narrow .phase-date {
+  font-size: 14px;
+}
+
+.is-narrow .phase-title {
+  font-size: 13px;
+}
+
+.is-narrow .phase-date,
+.is-narrow .phase-title {
+  stroke-width: 4;
+}
+
+.is-narrow .phase .info circle {
+  r: 10px;
+}
+
+.is-narrow .phase .info text {
+  font-size: 12px;
+  transform: translateY(-1px);
 }
 
 @media (prefers-reduced-motion: reduce) {
